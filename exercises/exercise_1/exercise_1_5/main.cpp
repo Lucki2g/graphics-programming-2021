@@ -24,6 +24,8 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 800;
 
+unsigned int degrees = 0, posVBO;
+
 
 // shader programs
 // ---------------
@@ -174,27 +176,64 @@ void createArrayBuffer(const std::vector<float> &array, unsigned int &VBO){
 }
 
 
+float getRadians() {
+    float PI = 3.1415;
+    return (degrees * PI) / 180;
+}
+
+void createPositionBuffer(unsigned int &posVBO) {
+    std::vector<float> positions;
+
+    // triangle 1
+    positions.push_back(cos(getRadians()) / 2 + -0.5f);
+    positions.push_back(sin(getRadians()) / 2 + -0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) / 2 + 0.5f);
+    positions.push_back(sin(getRadians()) / 2 + 0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) / 2 + 0.5f);
+    positions.push_back(sin(getRadians()) / 2 + -0.5f);
+    positions.push_back(0.0f);
+
+    // triangle 2
+    positions.push_back(cos(getRadians()) / 2 + 0.5f);
+    positions.push_back(sin(getRadians()) / 2 + 0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) / 2 + -0.5f);
+    positions.push_back(sin(getRadians()) / 2 + -0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) / 2 + -0.5f);
+    positions.push_back(sin(getRadians()) / 2 + 0.5f);
+    positions.push_back(0.0f);
+
+    // std::cout << positions[0] << ", " << positions[1] << ", " << positions[2] << std::endl;
+
+    createArrayBuffer(positions, posVBO);
+}
+
 // create the geometry, a vertex array object representing it, and set how a shader program should read it
 // -------------------------------------------------------------------------------------------------------
-void setupShape(const unsigned int shaderProgram,unsigned int &VAO, unsigned int &vertexCount){
+void setupShape(const unsigned int shaderProgram, unsigned int &VAO, unsigned int &vertexCount){
 
-    unsigned int posVBO, colorVBO;
-    createArrayBuffer(std::vector<float>{
-            // position
-            0.0f,  0.0f, 0.0f,
-            0.5f,  0.0f, 0.0f,
-            0.5f,  0.5f, 0.0f
-    }, posVBO);
+    unsigned int colorVBO;
+    createPositionBuffer(posVBO);
 
     createArrayBuffer( std::vector<float>{
             // color
-            1.0f,  0.0f, 0.0f,
-            1.0f,  0.0f, 0.0f,
-            1.0f,  0.0f, 0.0f
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f
     }, colorVBO);
 
     // tell how many vertices to draw
-    vertexCount = 3;
+    vertexCount = 6;
 
     // create a vertex array object (VAO) on OpenGL and save a handle to it
     glGenVertexArrays(1, &VAO);
@@ -232,6 +271,17 @@ void draw(const unsigned int shaderProgram, const unsigned int VAO, const unsign
     glBindVertexArray(VAO);
     // draw geometry
     glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+
+    // update square
+    degrees = (degrees + 10) % 360;
+    createPositionBuffer(posVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+
+    int posSize = 3;
+    int posAttributeLocation = glGetAttribLocation(shaderProgram, "aPos");
+
+    glEnableVertexAttribArray(posAttributeLocation);
+    glVertexAttribPointer(posAttributeLocation, posSize, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 

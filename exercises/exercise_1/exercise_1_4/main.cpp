@@ -173,28 +173,40 @@ void createArrayBuffer(const std::vector<float> &array, unsigned int &VBO){
     glBufferData(GL_ARRAY_BUFFER, array.size() * sizeof(GLfloat), &array[0], GL_STATIC_DRAW);
 }
 
-
 // create the geometry, a vertex array object representing it, and set how a shader program should read it
 // -------------------------------------------------------------------------------------------------------
 void setupShape(const unsigned int shaderProgram,unsigned int &VAO, unsigned int &vertexCount){
 
     unsigned int posVBO, colorVBO;
-    createArrayBuffer(std::vector<float>{
-            // position
-            0.0f,  0.0f, 0.0f,
-            0.5f,  0.0f, 0.0f,
-            0.5f,  0.5f, 0.0f
-    }, posVBO);
 
-    createArrayBuffer( std::vector<float>{
-            // color
-            1.0f,  0.0f, 0.0f,
-            1.0f,  0.0f, 0.0f,
-            1.0f,  0.0f, 0.0f
-    }, colorVBO);
+    std::vector<float> positions, colors;
+    int count = 16;
+    float interval = (2 * 3.1415) / (float) count;
+    for (int i = 0; i < count; i++) {
+        positions.push_back(0.0f);
+        positions.push_back(0.0f);
+        positions.push_back(0.0f);
+
+        positions.push_back(cos(i * interval) / 2);
+        positions.push_back(sin(i * interval) / 2);
+        positions.push_back(0.0f);
+
+        positions.push_back(cos((i + 1) * interval) / 2);
+        positions.push_back(sin((i + 1) * interval) / 2);
+        positions.push_back(0.0f);
+    }
+
+    for (int i = 0; i < count * 3; i++) {
+        colors.push_back(positions[i * 3] + 0.5f);
+        colors.push_back(positions[i * 3 + 1] + 0.5f);
+        colors.push_back(positions[i * 3 + 2] + 0.5f);
+    }
+
+    createArrayBuffer(positions, posVBO);
+    createArrayBuffer(colors, colorVBO);
 
     // tell how many vertices to draw
-    vertexCount = 3;
+    vertexCount = count * 3;
 
     // create a vertex array object (VAO) on OpenGL and save a handle to it
     glGenVertexArrays(1, &VAO);
