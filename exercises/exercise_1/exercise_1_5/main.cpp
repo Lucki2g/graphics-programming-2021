@@ -184,6 +184,32 @@ float getRadians() {
 void createPositionBuffer(unsigned int &posVBO) {
     std::vector<float> positions;
 
+    positions.push_back(cos(getRadians()) * -0.5f - sin(getRadians()) * -0.5f);
+    positions.push_back(sin(getRadians()) * -0.5f + cos(getRadians()) * -0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) * 0.5f - sin(getRadians()) * 0.5f);
+    positions.push_back(sin(getRadians()) * 0.5f + cos(getRadians()) * 0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) * 0.5f - sin(getRadians()) * -0.5f);
+    positions.push_back(sin(getRadians()) * 0.5f + cos(getRadians()) * -0.5f);
+    positions.push_back(0.0f);
+
+
+    positions.push_back(cos(getRadians()) * -0.5f - sin(getRadians()) * -0.5f);
+    positions.push_back(sin(getRadians()) * -0.5f + cos(getRadians()) * -0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) * 0.5f - sin(getRadians()) * 0.5f);
+    positions.push_back(sin(getRadians()) * 0.5f + cos(getRadians()) * 0.5f);
+    positions.push_back(0.0f);
+
+    positions.push_back(cos(getRadians()) * -0.5f - sin(getRadians()) * 0.5f);
+    positions.push_back(sin(getRadians()) * -0.5f + cos(getRadians()) * 0.5f);
+    positions.push_back(0.0f);
+
+    /*
     // triangle 1
     positions.push_back(cos(getRadians()) / 2 + -0.5f);
     positions.push_back(sin(getRadians()) / 2 + -0.5f);
@@ -209,7 +235,7 @@ void createPositionBuffer(unsigned int &posVBO) {
     positions.push_back(cos(getRadians()) / 2 + -0.5f);
     positions.push_back(sin(getRadians()) / 2 + 0.5f);
     positions.push_back(0.0f);
-
+    */
     // std::cout << positions[0] << ", " << positions[1] << ", " << positions[2] << std::endl;
 
     createArrayBuffer(positions, posVBO);
@@ -273,7 +299,7 @@ void draw(const unsigned int shaderProgram, const unsigned int VAO, const unsign
     glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
     // update square
-    degrees = (degrees + 10) % 360;
+    degrees = (degrees + 1) % 360;
     createPositionBuffer(posVBO);
     glBindBuffer(GL_ARRAY_BUFFER, posVBO);
 

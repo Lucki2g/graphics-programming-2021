@@ -178,20 +178,17 @@ void createArrayBuffer(const std::vector<float> &array, unsigned int &VBO){
 // -------------------------------------------------------------------------------------------------------
 void setupShape(const unsigned int shaderProgram,unsigned int &VAO, unsigned int &vertexCount){
 
-    unsigned int posVBO, colorVBO;
+    unsigned int VBO;
     createArrayBuffer(std::vector<float>{
             // position
             0.0f,  0.0f, 0.0f,
             0.5f,  0.0f, 0.0f,
-            0.5f,  0.5f, 0.0f
-    }, posVBO);
-
-    createArrayBuffer( std::vector<float>{
+            0.5f,  0.5f, 0.0f,
             // color
             1.0f,  0.0f, 0.0f,
             1.0f,  0.0f, 0.0f,
             1.0f,  0.0f, 0.0f
-    }, colorVBO);
+    }, VBO);
 
     // tell how many vertices to draw
     vertexCount = 3;
@@ -203,23 +200,18 @@ void setupShape(const unsigned int shaderProgram,unsigned int &VAO, unsigned int
     glBindVertexArray(VAO);
 
     // set vertex shader attribute "aPos"
-    glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     int posSize = 3;
-    int posAttributeLocation = glGetAttribLocation(shaderProgram, "aPos");
-
-    glEnableVertexAttribArray(posAttributeLocation);
-    glVertexAttribPointer(posAttributeLocation, posSize, GL_FLOAT, GL_FALSE, 0, 0);
-
-    // set vertex shader attribute "aColor"
-    glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
-
     int colorSize = 3;
+    int posAttributeLocation = glGetAttribLocation(shaderProgram, "aPos");
     int colorAttributeLocation = glGetAttribLocation(shaderProgram, "aColor");
 
-    glEnableVertexAttribArray(colorAttributeLocation);
-    glVertexAttribPointer(colorAttributeLocation, colorSize, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(posAttributeLocation, posSize, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(posAttributeLocation);
 
+    glVertexAttribPointer(colorAttributeLocation, colorSize, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(3 * sizeof(float) * posSize));
+    glEnableVertexAttribArray(colorAttributeLocation);
 }
 
 
