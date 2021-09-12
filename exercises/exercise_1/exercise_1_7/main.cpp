@@ -181,37 +181,41 @@ void setupShape(const unsigned int shaderProgram,unsigned int &VAO, unsigned int
 
     std::vector<float> data;
     int count = 16;
+    int size = 6;
     float interval = (2 * 3.1415) / (float) count;
     for (int i = 0; i < count; i++) {
+        int offset = i * 3;
+        
         // vertex
         data.push_back(0.0f);
         data.push_back(0.0f);
         data.push_back(0.0f);
 
         // color
-        data.push_back(data[i * 6] + 0.5f);
-        data.push_back(data[i * 6 + 1] + 0.5f);
-        data.push_back(data[i * 6 + 2] + 0.5f);
+        data.push_back(data[offset* size] + 0.5f);
+        data.push_back(data[offset* size + 1] + 0.5f);
+        data.push_back(data[offset* size + 2] + 0.5f);
 
         // vertex
-        data.push_back(cos(i * interval) / 2);
-        data.push_back(sin(i * interval) / 2);
+        data.push_back(cos(offset* interval) / 2);
+        data.push_back(sin(offset* interval) / 2);
         data.push_back(0.0f);
 
         // color
-        data.push_back(data[(i + 1) * 6] + 0.5f);
-        data.push_back(data[(i + 1) * 6 + 1] + 0.5f);
-        data.push_back(data[(i + 1) * 6 + 2] + 0.5f);
+        data.push_back(data[(offset+ 1) * size] + 0.5f);
+        data.push_back(data[(offset+ 1) * size + 1] + 0.5f);
+        data.push_back(data[(offset+ 1) * size + 2] + 0.5f);
 
         // vertex
-        data.push_back(cos((i + 1) * interval) / 2);
-        data.push_back(sin((i + 1) * interval) / 2);
+        data.push_back(cos((offset+ 1) * interval) / 2);
+        data.push_back(sin((offset+ 1) * interval) / 2);
         data.push_back(0.0f);
 
         // color
-        data.push_back(data[(i + 2) * 6] + 0.5f);
-        data.push_back(data[(i + 2) * 6 + 1] + 0.5f);
-        data.push_back(data[(i + 2) * 6 + 2] + 0.5f);
+        data.push_back(data[(offset+ 2) * size] + 0.5f);
+        data.push_back(data[(offset+ 2) * size + 1] + 0.5f);
+        data.push_back(data[(offset+ 2) * size + 2] + 0.5f);
+
     }
 
     createArrayBuffer(data, VBO);
@@ -231,10 +235,10 @@ void setupShape(const unsigned int shaderProgram,unsigned int &VAO, unsigned int
     int colorSize = 3;
     int colorAttributeLocation = glGetAttribLocation(shaderProgram, "aColor");
 
-    glVertexAttribPointer(posAttributeLocation, posSize, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(posAttributeLocation, posSize, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)0);
     glEnableVertexAttribArray(posAttributeLocation);
 
-    glVertexAttribPointer(colorAttributeLocation, colorSize, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(colorAttributeLocation, colorSize, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(colorAttributeLocation);
 
 }

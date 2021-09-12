@@ -115,11 +115,31 @@ SceneObject instantiateCone(float r, float g, float b, float offsetX, float offs
     SceneObject sceneObject{};
 
     // you will need to store offsetX, offsetY, r, g and b in the object.
-    // CODE HERE
+    sceneObject.r = r;
+    sceneObject.g = g;
+    sceneObject.b = b;
+    sceneObject.x = offsetX;
+    sceneObject.y = offsetY;
+
     // Build the geometry into an std::vector<float> or float array.
-    // CODE HERE
+    int count = 16;
+    std::vector<float> geometry;
+    float interval = (2 * 3.1415) / (float) count;
+    for (int i = 0; i < count; i++) {
+        // vertex
+        geometry.push_back(cos(i * interval) / 2 + offsetX);
+        geometry.push_back(sin(i * interval) / 2 + offsetY);
+        geometry.push_back(0.0f);
+        // color
+        geometry.push_back(r);
+        geometry.push_back(g);
+        geometry.push_back(b);
+        //
+    }
+
     // Store the number of vertices in the mesh in the scene object.
-    // CODE HERE
+    sceneObject.vertexCount = 16;
+
     // Declare and generate a VAO and VBO (and an EBO if you decide the work with indices).
     // CODE HERE
     // Bind and set the VAO and VBO (and optionally a EBO) in the correct order.
