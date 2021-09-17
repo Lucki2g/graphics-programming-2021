@@ -9,6 +9,6 @@ uniform mat4 transformation;
 void main()
 {
    // TODO 3.1 multiply the postion by the 'model' matrix you have created
-   gl_Position = vec4(pos, 1.0) * transformation;
+   gl_Position = transformation * vec4(pos, 1.0);
    vtxColor = color;
 }
