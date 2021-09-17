@@ -1,6 +1,5 @@
 #version 330 core
 // FRAGMENT SHADER
-
 // TODO voronoi 1.5
 out vec4 fragColor;
 // Create an 'in float' variable to receive the depth value from the vertex shader,
