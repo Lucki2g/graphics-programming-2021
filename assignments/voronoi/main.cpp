@@ -252,16 +252,13 @@ void key_input_callback(GLFWwindow* window, int button, int other, int action, i
         activeShader = &shaderPrograms[0];
         offsetPos = glGetUniformLocation(shaderPrograms[0].ID, "offsetPos");
         coneColor = glGetUniformLocation(shaderPrograms[0].ID, "coneColor");
-        std::cout << "(" << offsetPos << ", " << coneColor << ")" << std::endl;
     } else if (button == GLFW_KEY_2 && action == GLFW_PRESS) {
         activeShader = &shaderPrograms[1];
         offsetPos = glGetUniformLocation(shaderPrograms[1].ID, "offsetPos");
-        std::cout << "(" << offsetPos << ", " << coneColor << ")" << std::endl;
     } else if (button == GLFW_KEY_3 && action == GLFW_PRESS) {
         activeShader = &shaderPrograms[2];
         offsetPos = glGetUniformLocation(shaderPrograms[2].ID, "offsetPos");
         coneColor = glGetUniformLocation(shaderPrograms[2].ID, "coneColor");
-        std::cout << "(" << offsetPos << ", " << coneColor << ")" << std::endl;
     }
 }
 

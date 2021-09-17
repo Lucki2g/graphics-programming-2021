@@ -1,6 +1,5 @@
 #version 330 core
 // VERTEX SHADER
-
 // TODO voronoi 1.3
 // Receives position in 'vec3', the position variable has attribute 'location = 0'
 layout (location = 0) in vec3 aPos;

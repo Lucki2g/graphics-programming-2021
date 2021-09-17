@@ -52,6 +52,7 @@ float tiltAngle = 0.0f;
 float planeSpeed = 0.005f;
 glm::vec2 planePosition = glm::vec2(0.0,0.0);
 
+GLuint transformationMatrix;
 
 int main()
 {
@@ -93,7 +94,6 @@ int main()
     // the model was originally baked with lights for a left handed coordinate system, we are "fixing" the z-coordinate
     // so we can work with a right handed coordinate system
     PlaneModel::getInstance().invertModelZ();
-
 
     // setup mesh objects
     // ---------------------------------------
@@ -156,11 +156,39 @@ void drawPlane(){
     //  you will need to transform the pose of the pieces of the plane by manipulating glm matrices and uploading a
     //  uniform mat4 model matrix to the vertex shader
 
+    // transformation
+    transformationMatrix = glGetUniformLocation(shaderProgram -> ID, "transformation");
+    glm::mat4 transformation = glm::mat4(1.0f);
+    glUniformMatrix4fv(transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformation));
     // body
     drawSceneObject(planeBody);
     // right wing
     drawSceneObject(planeWing);
 
+    // transformation
+    transformationMatrix = glGetUniformLocation(shaderProgram -> ID, "transformation");
+    transformation = glm::mat4(1.0f);
+    transformation = glm::scale(transformation, glm::vec3(-1, 1, 1));
+    glUniformMatrix4fv(transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformation));
+     // right wing
+    drawSceneObject(planeWing);
+
+    // transformation
+    transformationMatrix = glGetUniformLocation(shaderProgram -> ID, "transformation");
+    transformation = glm::mat4(1.0f);
+    transformation = glm::translate(transformation, glm::vec3(0, 0.5f, 0));
+    glUniformMatrix4fv(transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformation));
+    // left tail wing
+    drawSceneObject(planeWing);
+
+    // transformation
+    transformationMatrix = glGetUniformLocation(shaderProgram -> ID, "transformation");
+    transformation = glm::mat4(1.0f);
+    transformation = glm::translate(transformation, glm::vec3(0, 0.5f, 0));
+    transformation = glm::scale(transformation, glm::vec3(-1f, 0, 0));
+    glUniformMatrix4fv(transformationMatrix, 1, GL_FALSE, glm::value_ptr(transformation));
+    // right tail wing
+    drawSceneObject(planeWing);
 }
 
 void drawSceneObject(SceneObject obj){
