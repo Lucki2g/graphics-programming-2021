@@ -154,15 +154,14 @@ int main()
 }
 
 void resetTransformationMatrix(glm::mat4 &matrix) {
-    // calculate planePosition
-    glm::mat4 positionMatrix = glm::mat4(1.0f);
-    glm::rotate(positionMatrix, glm::degrees(planeHeading), glm::vec3(0, 0, 1.0f));
-    glm::scale(positionMatrix, glm::vec3(planeSpeed));
-    planePosition = planePosition + (positionMatrix * glm::vec4(planePosition, 0, 1.0f));
+    // move to origin
 
+    // do scaling and rotation
     matrix = glm::scale(matrix, glm::vec3(0.1f));
     matrix = glm::rotate(matrix, glm::radians(tiltAngle), glm::vec3(0, 1.0f, 0));
-    matrix = glm::translate(matrix, glm::vec3(planePosition, 0));
+    matrix = glm::rotate(matrix, glm::radians(-planeHeading), glm::vec3(0, 0, 1.0f));
+
+    // translate
 }
 
 void drawPlane(){
@@ -172,6 +171,14 @@ void drawPlane(){
 
     transformationMatrix = glGetUniformLocation(shaderProgram -> ID, "transformation");
 
+
+    // calculate planePosition using trigonometry
+    glm::mat4 positionMatrix = glm::mat4(1.0f);
+    positionMatrix = glm::rotate(positionMatrix, glm::radians(-planeHeading - 45.0f), glm::vec3(0, 0, 1));
+    glm::vec4 movement = glm::vec4(planeSpeed, planeSpeed, 0, 1.0f) * positionMatrix;
+    std::cout << "(" << movement.x << ", " << movement.y << ", " << movement.z << ") heading: " << planeHeading << "pos: (" << planePosition.x << ", " << planePosition.y << ") " << std::endl;
+    planePosition = planePosition + (glm::vec2(movement.x, movement.y));
+    planePosition = glm::vec2(fmod(planePosition.x, 20), fmod(planePosition.y, 20));
 
     // transformation
     glm::mat4 transformation = glm::mat4(1.0f);

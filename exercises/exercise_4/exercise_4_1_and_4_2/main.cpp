@@ -65,7 +65,9 @@ float currentTime;
 glm::vec2 clickStart(0.0f), clickEnd(0.0f);
 
 // TODO 4.1 and 4.2 - global variables you might need
-
+glm::vec2 planePosition(0.0f), currentPosition(0.0f);
+float planeAngle = 0.0f;
+float planeSpeed = 0.0f;
 
 
 int main()
@@ -170,9 +172,28 @@ void drawArrow(){
 
 void drawPlane(){
     // TODO - 4.1 translate and rotate the plane
-
     glm::mat4 rotation(1.0f);
+    if (clickStart != currentPosition) {
+
+        // move coordinate system to center of plane
+        glm::vec2 startRelativeToPlane = planePosition + clickStart;
+        glm::vec2 currentRelativeToPlane = planePosition + currentPosition;
+
+        glm::vec2 start = planePosition + glm::vec2(0, 1.0f);
+        float start_dot = glm::dot(startRelativeToPlane, start);
+        float start_det = startRelativeToPlane.x * start.y - startRelativeToPlane.y * start.x;
+        float startAngle = atan2(start_det, start_dot); // angle from click to start position
+
+        float dot_product = glm::dot(startRelativeToPlane, currentRelativeToPlane);
+        float determinant = startRelativeToPlane.x * currentRelativeToPlane.y - startRelativeToPlane.y * currentRelativeToPlane.x;
+        planeAngle = atan2(determinant, dot_product);
+
+        // apply
+        rotation = glm::rotateZ(planeAngle);
+    }
+
     glm::mat4 translation(1.0f);
+    translation = glm::translate(translation, glm::vec3(planePosition, 0.0f));
 
     // scale matrix to make the plane 10 times smaller
     glm::mat4 scale = glm::scale(.1f, .1f, .1f);
@@ -219,7 +240,7 @@ void drawPlane(){
 
 void setup(){
     // initialize shaders
-    shaderProgram = new Shader("shader.vert", "shader.frag");
+    shaderProgram = new Shader("shaders/shader.vert", "shaders/shader.frag");
 
     PlaneModel& airplane = PlaneModel::getInstance();
     // initialize plane body mesh objects
@@ -297,6 +318,7 @@ void cursorInNdc(float screenX, float screenY, int screenW, int screenH, float &
     float yNdc = (float) screenY / (float) screenH * 2.0f - 1.0f;
     x = xNdc;
     y = -yNdc;
+    currentPosition = glm::vec2(x, y);
 }
 
 
@@ -329,6 +351,8 @@ void button_input_callback(GLFWwindow* window, int button, int action, int mods)
         cursorInNdc(screenX, screenY, screenW, screenH, clickEnd.x, clickEnd.y);
         // reset the start position
         cursorInNdc(screenX, screenY, screenW, screenH, clickStart.x, clickStart.y);
+        std::cout << "plane: " << planePosition << "current: " << currentPosition << std::endl;
+        planePosition = glm::vec2(clickStart);
     }
 }
 
