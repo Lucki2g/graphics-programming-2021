@@ -59,6 +59,8 @@ float currentTime;
 glm::vec3 camForward(.0f, .0f, -1.0f);
 glm::vec3 camPosition(.0f, 1.6f, 0.0f);
 float linearSpeed = 0.15f, rotationGain = 30.0f;
+float yaw = -90.0f, pitch;
+glm::vec2 previousPos = glm::vec2(300, 300); // center
 
 
 int main()
@@ -305,13 +307,44 @@ void cursor_input_callback(GLFWwindow* window, double posX, double posY){
     //  if you decide to use the lookAt function, make sure that the up vector and the
     //  vector from the camera position to the lookAt target are not collinear
 
+    camForward.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    camForward.y = sin(glm::radians(pitch));
+    camForward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+    float xoffset = posX - previousPos.x;
+    float yoffset = previousPos.y - posY; // reversed since y-coordinates range from bottom to top
+    previousPos = glm::vec2(posX, posY);
+
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+    if(pitch > 89.0f)
+        pitch =  89.0f;
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+
+    camForward = glm::normalize(camForward);
+
+    // std::cout << "(" << posX << ", " << posY << ")" << std::endl;
 }
 
 void processInput(GLFWwindow *window) {
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    // TODO move the camera position based on keys pressed (use either WASD or the arrow keys)
+    // WASD movement
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camPosition += linearSpeed * camForward;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camPosition -= linearSpeed * camForward;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camPosition -= glm::normalize(glm::cross(camForward, glm::vec3(0, 1, 0))) * linearSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camPosition += glm::normalize(glm::cross(camForward, glm::vec3(0, 1, 0))) * linearSpeed;
 
 }
 
