@@ -11,8 +11,6 @@
 #include "plane_model.h"
 #include "primitives.h"
 
-#include "PerlinNoise.h" // perlin noise for wind
-
 // structure to hold render info
 // -----------------------------
 struct SceneObject{
@@ -26,18 +24,17 @@ struct SceneObject{
 
 // structure to hold particles info
 // -----------------------------
-PerlinNoise pn;
-const unsigned int particleVertexBufferSize = 10;// TODO increase (max)65536;    // # of particles
-const unsigned int particleSize = 10;                    // particle attributes
+const float LINE_LENGTH = 0.05f;
+const unsigned int particleVertexBufferSize = 100;// TODO increase (max)65536;    // # of particles
 std::vector<glm::vec3> gravityOffsets = { // TODO: 20 offsets were what the paper thought was good (ALSO implement windOffsets)
         glm::vec3 (0),
         glm::vec3 (0),
         glm::vec3 (0)
 },
 gravityDeltas = {
-        glm::vec3(0, -0.01f, 0),
         glm::vec3(0, -0.02f, 0),
-        glm::vec3(0, -0.005f, 0)
+        glm::vec3(0, -0.04f, 0),
+        glm::vec3(0, -0.01f, 0)
 },
 windOffsets = {
         glm::vec3 (0),
@@ -53,7 +50,8 @@ struct ParticleObject {
 
     void drawSceneObject() const {
         glBindVertexArray(VAO);
-        glDrawArrays(GL_POINTS, 0, particleVertexBufferSize);
+        // glDrawArrays(GL_POINTS, 0, particleVertexBufferSize);
+        glDrawArrays(GL_LINES, 0, particleVertexBufferSize * 2);
     }
 };
 
@@ -78,8 +76,8 @@ void emitParticle(float x, float y, float z);
 
 // screen settings
 // ---------------
-const unsigned int SCR_WIDTH = 600;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 900;
+const unsigned int SCR_HEIGHT = 900;
 
 // global variables used for rendering
 // -----------------------------------
@@ -99,7 +97,8 @@ glm::vec3 camForward(.0f, .0f, -1.0f);
 glm::vec3 camPosition(.0f, 1.6f, 0.0f);
 float linearSpeed = 0.15f, rotationGain = 30.0f;
 float yaw = -90.0f, pitch;
-glm::vec2 previousPos = glm::vec2(300, 300); // center
+glm::vec2 previousPos = glm::vec2(SCR_WIDTH / 2, SCR_HEIGHT / 2); // center
+glm::mat4 previousPVMatrix = glm::mat4(1.0f);
 
 int main()
 {
@@ -178,7 +177,7 @@ int main()
         for (int i = 0; i < gravityOffsets.size(); i++) {
             gravityOffsets[i] += gravityDeltas[i];
 
-            windOffsets[i] += glm::vec3((((float)rand()/RAND_MAX) * 2 - 1) / 10, 0, (((float)rand()/RAND_MAX) * 2 - 1) / 10);
+            // windOffsets[i] += glm::vec3((((float)rand()/RAND_MAX) * 2 - 1) / 100, 0, (((float)rand()/RAND_MAX) * 2 - 1) / 100);
         }
 
         glfwSwapBuffers(window);
@@ -227,6 +226,9 @@ void drawObjects(){
 
     // draw particles
     drawParticles(viewProjection);
+
+    // save old view projection matrix
+    previousPVMatrix = viewProjection;
 }
 
 
@@ -235,7 +237,6 @@ void drawCube(glm::mat4 model){
     shaderProgram->setMat4("model", model);
     cube.drawSceneObject();
 }
-
 
 void drawPlane(glm::mat4 model){
     // draw plane body and right wing
@@ -272,6 +273,7 @@ void drawParticles(glm::mat4 model){
     particleShaderProgram->use();
 
     particleShaderProgram->setMat4("model", model);
+    particleShaderProgram->setMat4("prevModel", previousPVMatrix);
     particleShaderProgram->setVec3("camForward", camForward);
     particleShaderProgram->setVec3("camPosition", camPosition);
     particleShaderProgram->setFloat("boxSize", boxSize);
@@ -312,9 +314,11 @@ void setup(){
             y = (float)rand()/RAND_MAX,
             z = (float)rand()/RAND_MAX;
 
-        particlePositions.push_back(x);
-        particlePositions.push_back(y);
-        particlePositions.push_back(z);
+        for (int j = 0; j < 2; j++) {
+            particlePositions.push_back(x);
+            particlePositions.push_back(y);
+            particlePositions.push_back(z);
+        }
         // if (i % 50 == 0) std::cout << i << ": (" << x << ", " << y << ", " << z << ")" << std::endl;
     }
 
