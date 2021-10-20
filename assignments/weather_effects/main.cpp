@@ -204,7 +204,6 @@ int main()
     return 0;
 }
 
-
 void drawObjects(){
     shaderProgram->use();
 
