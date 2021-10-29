@@ -1,10 +1,4 @@
-//
-// Created by Henrique on 9/17/2019.
-//
-
-#ifndef GRAPHICSPROGRAMMINGEXERCISES_PRIMITIVES_H
-#define GRAPHICSPROGRAMMINGEXERCISES_PRIMITIVES_H
-
+// Primitives from exercise 5.2
 std::vector<float> cubeVertices {-1.0f, -1.0f, 1.0f,
                                  1.0f, -1.0f, 1.0f,
                                  1.0f, 1.0f, 1.0f,
@@ -40,46 +34,7 @@ std::vector<float> floorVertices {-20.0f, 0.0f, 20.0f,
                                   -20.0f, 0.0f, -20.0f};
 std::vector<unsigned int> floorIndices {0, 1, 2,
                                         0, 2, 3};
-std::vector<float> floorColors {.6f, 1.f, .6f, 1.f,
-                                .6f, 1.f, .6f, 1.f,
-                                .9f, .9f, .9f, 1.f,
-                                .6f, 1.f, .6f, 1.f};
-
-std::vector<float> houseVertices = {
-        //Front wall
-        0.0f,  0.0f, 54.0f,
-        16.0f,  0.0f, 54.0f,
-        16.0f,  0.0f, 54.0f,
-        16.0f, 10.0f, 54.0f,
-        16.0f, 10.0f, 54.0f,
-         8.0f, 16.0f, 54.0f,
-         8.0f, 16.0f, 54.0f,
-         0.0f, 10.0f, 54.0f,
-         0.0f, 10.0f, 54.0f,
-         0.0f,  0.0f, 54.0f,
-        //Back Wall
-        16.0f,  0.0f, 30.0f,
-        16.0f,  0.0f, 30.0f,
-        16.0f, 10.0f, 30.0f,
-         0.0f,  0.0f, 30.0f,
-        16.0f, 10.0f, 30.0f,
-         8.0f, 16.0f, 30.0f,
-         8.0f, 16.0f, 30.0f,
-         0.0f, 10.0f, 30.0f,
-         0.0f, 10.0f, 30.0f,
-         0.0f,  0.0f, 30.0f,
-        //Sides
-         0.0f,  0.0f, 54.0f,
-         0.0f,  0.0f, 30.0f,
-        16.0f,  0.0f, 54.0f,
-        16.0f,  0.0f, 30.0f,
-        16.0f, 10.0f, 54.0f,
-        16.0f, 10.0f, 30.0f,
-         8.0f, 16.0f, 54.0f,
-         8.0f, 16.0f, 30.0f,
-         0.0f, 10.0f, 54.0f,
-         0.0f, 10.0f, 30.0f
-};
-int NHouseVertices = sizeof(houseVertices) / sizeof(glm::vec3);
-
-#endif //GRAPHICSPROGRAMMINGEXERCISES_PRIMITIVES_H
+std::vector<float> floorColors {.2f, .1f, .0f, 1.f,
+                                .2f, .1f, .0f, 1.f,
+                                .2f, .1f, .0f, 1.f,
+                                .2f, .1f, .0f, 1.f};

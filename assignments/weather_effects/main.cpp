@@ -7,120 +7,94 @@
 
 #include "shader.h"
 #include "glmutils.h"
-
-#include "plane_model.h"
 #include "primitives.h"
+#include <math.h>
 
-// structure to hold render info
-// -----------------------------
-struct SceneObject{
+// Debug mode
+#define __DEBUG__ false
+
+// NOTICE: Set the RAIN variable to
+//         false to render snow, and 
+//         to true to render rain
+const bool RAIN = true;
+
+// Struct used for both solid scene geometry
+// and particle effects
+struct SceneObject
+{
     unsigned int VAO;
     unsigned int vertexCount;
-    void drawSceneObject() const{
+
+    void draw(int drawType) const
+    {
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES,  vertexCount, GL_UNSIGNED_INT, 0);
+        glDrawElements(drawType, vertexCount, GL_UNSIGNED_INT, 0);
     }
 };
 
-// structure to hold particles info
-// -----------------------------
-const float LINE_LENGTH = 0.05f;
-const unsigned int particleVertexBufferSize = 100; // # of particles
-std::vector<glm::vec3> gravityOffsets = { // TODO: 20 offsets were what the paper thought was good
-        glm::vec3 (0),
-        glm::vec3 (0),
-        glm::vec3 (0),
-        glm::vec3 (0),
-        glm::vec3 (0)
-},
-gravityDeltas = {
-        glm::vec3(0, -0.05f, 0),
-        glm::vec3(0, -0.08f, 0),
-        glm::vec3(0, -0.06f, 0),
-        glm::vec3(0, -0.10f, 0),
-        glm::vec3(0, -0.07f, 0)
-},
-windOffsets = {
-        glm::vec3 (0),
-        glm::vec3 (0),
-        glm::vec3 (0),
-        glm::vec3 (0),
-        glm::vec3 (0)
-};
-
-const unsigned int boxSize = 1.0f;
-struct ParticleObject {
-    unsigned int VAO;
-    unsigned int VBO;
-
-    void drawSceneObject() const {
-        glBindVertexArray(VAO);
-        // glDrawArrays(GL_POINTS, 0, particleVertexBufferSize);
-        glDrawArrays(GL_LINES, 0, particleVertexBufferSize * 2);
-    }
-};
-
-// function declarations
-// ---------------------
+// Function declarations
 unsigned int createArrayBuffer(const std::vector<float> &array);
 unsigned int createElementArrayBuffer(const std::vector<unsigned int> &array);
 unsigned int createVertexArray(const std::vector<float> &positions, const std::vector<float> &colors, const std::vector<unsigned int> &indices);
-void setup();
-void drawObjects();
 
-// glfw and input functions
-// ------------------------
+// GLFW and input
 void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float &x, float &y);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void cursor_input_callback(GLFWwindow* window, double posX, double posY);
-void drawCube(glm::mat4 model);
-void drawPlane(glm::mat4 model);
+
+// Draw functions
+void drawObjects(glm::mat4 scale, glm::mat4 viewProjection);
 void drawParticles(glm::mat4 model);
+void drawCube(glm::mat4 model);
+void drawFloor(glm::mat4 model);
+void generateParticles(std::vector<float> &particleVertices, 
+                       std::vector<unsigned int> &particleIndices, 
+                       std::vector<float> &particleColors,
+                       int numberOfParticles);
+void generateOffsets(std::vector<glm::vec3> &gravityOffsets, 
+                     std::vector<glm::vec3> &windOffsets, 
+                     std::vector<glm::vec3> &randomOffsets,
+                     int numberOfOffsets);
+void setup();
 
-// screen settings
-// ---------------
-const unsigned int SCR_WIDTH = 900;
-const unsigned int SCR_HEIGHT = 900;
+// Screen settings
+const unsigned int SCR_WIDTH = 600;
+const unsigned int SCR_HEIGHT = 600;
 
-// global variables used for rendering
-// -----------------------------------
+// Global object vars
 SceneObject cube;
 SceneObject floorObj;
-SceneObject planeBody;
-SceneObject planeWing;
-SceneObject planePropeller;
-ParticleObject particles;
-Shader* shaderProgram;
-Shader* particleShaderProgram;
+SceneObject particleBox;
 
-// global variables used for control
-// ---------------------------------
-float currentTime;
-glm::vec3 camForward(.0f, .0f, -1.0f);
-glm::vec3 camPosition(.0f, 1.6f, 0.0f);
-int moving = 0; // lazy solution for fixing hyper speed effect
-float linearSpeed = 0.15f, rotationGain = 30.0f;
-float yaw = -90.0f, pitch;
-glm::vec2 previousPos = glm::vec2(SCR_WIDTH / 2, SCR_HEIGHT / 2); // center
-glm::mat4 previousPVMatrix = glm::mat4(1.0f);
+// Box size
+const float BOX_SIZE = 30.f;
+
+// Global variables we will use to store our objects, shaders, and active shader
+std::vector<SceneObject> sceneObjects;
+std::vector<Shader> shaderPrograms;
+Shader* activeShader;
+
+// Global camera settings
+glm::vec3 cameraPos   = glm::vec3(0.0f, 1.6f, 0.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+
+float currentTime, cameraSpeed = .15f, rotationGain = 30.0f;
 
 int main()
 {
-    // glfw: initialize and configure
-    // ------------------------------
+    // glfw: Initialize and configure
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+    #endif
 
-    // glfw window creation
-    // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Weather Effects", NULL, NULL);
+    // GLFW window creation
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Assignment - Weather Effects", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -132,230 +106,264 @@ int main()
     glfwSetCursorPosCallback(window, cursor_input_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
+    // GLAD: Load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-    // setup mesh objects
-    // ---------------------------------------
+    // Set up shader programs and VAO globals
     setup();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // Setting up the z-buffer
+    glDepthRange(-1, 1); // The NDC's a left-handed coordinate system with the camera pointing towards -z
+    glEnable(GL_DEPTH_TEST); // Enable z-buffer depth test
+    glDepthFunc(GL_LESS); // Draws fragments that are closer to the screen in NDC
 
-    // set up the z-buffer
-    // Notice that the depth range is now set to glDepthRange(-1,1), that is, a left handed coordinate system.
-    // That is because the default openGL's NDC is in a left handed coordinate system (even though the default
-    // glm and legacy openGL camera implementations expect the world to be in a right handed coordinate system);
-    // so let's conform to that
-    glDepthRange(-1,1); // make the NDC a LEFT handed coordinate system, with the camera pointing towards +z
-    glEnable(GL_DEPTH_TEST); // turn on z-buffer depth test
-    glDepthFunc(GL_LESS); // draws fragments that are closer to the screen in NDC
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // Enable points to be drawn
+    // Enabling the built-in gl_PointSize
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
-
-    // render loop
-    // -----------
-    // render every loopInterval seconds
-    float loopInterval = 0.02f;
+    // Render every interval seconds
+    float interval = 0.02f;
     auto begin = std::chrono::high_resolution_clock::now();
 
-    while (!glfwWindowShouldClose(window))
-    {
-        // update current time
+    std::vector<glm::vec3> gravityOffsets;
+    std::vector<glm::vec3> windOffsets;
+    std::vector<glm::vec3> randomOffsets;
+    
+    int simulations = (RAIN) ? 5 : 10;
+    generateOffsets(gravityOffsets, windOffsets, randomOffsets, simulations);
+
+    // Render loop
+    glm::mat4 viewProjectionPrev;
+    bool firstIteration = true; // True until the loop body has executed once
+                                // and there exists a previous frame
+    while (!glfwWindowShouldClose(window)) {
         auto frameStart = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> appTime = frameStart - begin;
         currentTime = appTime.count();
 
         processInput(window);
-        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
-        // notice that we also need to clear the depth buffer (aka z-buffer) every new frame
+        glClearColor(0.0f, 0.15f, 0.30f, 1.0f); // Sky blue
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        drawObjects();
-        // update offsets
-        for (int i = 0; i < gravityOffsets.size(); i++) {
-            gravityOffsets[i] += gravityDeltas[i];
-
-            windOffsets[i] += glm::vec3((((float)rand()/RAND_MAX) * 2 - 1) / 100, 0, (((float)rand()/RAND_MAX) * 2 - 1) / 100);
+        // Setting scale and view projection
+        glm::mat4 scale = glm::scale(1.f, 1.f, 1.f);
+        glm::mat4 projection = glm::perspectiveFov(70.0f, (float) SCR_WIDTH, (float) SCR_HEIGHT, .01f, 100.0f);
+        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 viewProjection = projection * view;
+        
+        if (firstIteration) {
+            viewProjectionPrev = viewProjection;
+            firstIteration = false;
         }
+        
+        // Drawing objects
+        activeShader = &shaderPrograms[0];
+        glUseProgram(activeShader->ID);
+        drawObjects(scale, viewProjection);
+
+        // Drawing particles
+        activeShader = (RAIN) ? &shaderPrograms[2] : &shaderPrograms[1];
+        glUseProgram(activeShader->ID);
+        activeShader->setFloat("boxSize", BOX_SIZE);
+        activeShader->setFloat("currentTime", currentTime);
+
+        // Enabling alpha blending
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+
+        for (int i = 0; i < simulations; i++) {
+            glm::vec3 gravityOffset = gravityOffsets[i] * currentTime;
+            glm::vec3 windOffset = windOffsets[i] * currentTime;
+            
+            if (RAIN) {
+                float gravityMultiplier = 10.f;
+                gravityOffset = gravityOffset * gravityMultiplier;
+                windOffset = glm::vec3(0.f, 0.f, 0.f);
+            }
+
+            glm::vec3 offsets = gravityOffset + windOffset + randomOffsets[i];
+            glm::vec3 forwardOffset = cameraFront * 12.f;
+            offsets -= cameraPos + forwardOffset + (BOX_SIZE / 2);
+            float xOffset = (float) fmod(offsets.x, BOX_SIZE);
+            float yOffset = (float) fmod(offsets.y, BOX_SIZE);
+            float zOffset = (float) fmod(offsets.z, BOX_SIZE);
+            offsets = glm::vec3(xOffset, yOffset, zOffset);
+
+            // Setting uniforms
+            activeShader->setVec3("offsets", offsets);
+            activeShader->setVec3("cameraPos", cameraPos);
+            activeShader->setVec3("cameraFront", cameraFront);
+            activeShader->setVec3("forwardOffset", forwardOffset);
+            activeShader->setMat4("modelPrev", viewProjectionPrev);
+            activeShader->setVec3("velocity", gravityOffsets[i]);
+            
+            drawParticles(viewProjection);
+        }
+        viewProjectionPrev = viewProjection;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        // control render loop frequency
+        // Disabling alpha blending again
+        glDisable(GL_BLEND);
+
         std::chrono::duration<float> elapsed = std::chrono::high_resolution_clock::now()-frameStart;
-        while (loopInterval > elapsed.count()) {
+        while (interval > elapsed.count()) {
             elapsed = std::chrono::high_resolution_clock::now() - frameStart;
         }
     }
 
-    delete shaderProgram;
-    delete particleShaderProgram;
-
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
 
-void drawObjects(){
-    shaderProgram->use();
+// Shader initialization and object creation
+void setup()
+{
+    // Object and particle (snow and rain) shader programs
+    shaderPrograms.push_back(Shader("shaders/shader.vert", "shaders/shader.frag"));
+    shaderPrograms.push_back(Shader("shaders/snow.vert", "shaders/snow.frag"));
+    shaderPrograms.push_back(Shader("shaders/rain.vert", "shaders/rain.frag"));
+    
+    // Objects
+    activeShader = &shaderPrograms[0];
+    floorObj.VAO = createVertexArray(floorVertices, floorColors, floorIndices);
+    floorObj.vertexCount = (int) floorIndices.size();
+    cube.VAO = createVertexArray(cubeVertices, cubeColors, cubeIndices);
+    cube.vertexCount = (int) cubeIndices.size();
 
-    glm::mat4 scale = glm::scale(1.f, 1.f, 1.f);
+    // Particles
+    activeShader = (RAIN) ? &shaderPrograms[2] : &shaderPrograms[1];
+    
+    std::vector<float> particleVertices;
+    std::vector<unsigned int> particleIndices;
+    std::vector<float> particleColors;
+    int numberOfParticles = 10000;
+    
+    generateParticles(particleVertices, particleIndices, particleColors, numberOfParticles);
+    particleBox.VAO = createVertexArray(particleVertices, particleColors, particleIndices);
+    particleBox.vertexCount = (int) particleIndices.size();
+}
 
-    // NEW!
-    // update the camera pose and projection, and compose the two into the viewProjection with a matrix multiplication
-    // projection * view = world_to_view -> view_to_perspective_projection
-    // or if we want ot match the multiplication order (projection * view), we could read
-    // perspective_projection_from_view <- view_from_world
-    glm::mat4 projection = glm::perspectiveFov(70.0f, (float)SCR_WIDTH, (float)SCR_HEIGHT, .01f, 100.0f);
-    glm::mat4 view = glm::lookAt(camPosition, camPosition + camForward, glm::vec3(0,1,0));
-    glm::mat4 viewProjection = projection * view;
-
-    // draw floor (the floor was built so that it does not need to be transformed)
-    shaderProgram->setMat4("model", viewProjection);
-    floorObj.drawSceneObject();
-
-    // draw 2 cubes and 2 planes in different locations and with different orientations
+void drawObjects(glm::mat4 scale, glm::mat4 viewProjection)
+{
+    drawFloor(viewProjection);
     drawCube(viewProjection * glm::translate(2.0f, 1.f, 2.0f) * glm::rotateY(glm::half_pi<float>()) * scale);
     drawCube(viewProjection * glm::translate(-2.0f, 1.f, -2.0f) * glm::rotateY(glm::quarter_pi<float>()) * scale);
-
-    drawPlane(viewProjection * glm::translate(-2.0f, .5f, 2.0f) * glm::rotateX(glm::quarter_pi<float>()) * scale);
-    drawPlane(viewProjection * glm::translate(2.0f, .5f, -2.0f) * glm::rotateX(glm::quarter_pi<float>() * 3.f) * scale);
-
-    // draw particles
-    particleShaderProgram->use();
-    drawParticles(viewProjection);
-
-    // save old view projection matrix
-    previousPVMatrix = viewProjection;
 }
 
-void drawCube(glm::mat4 model){
-    // draw object
-    shaderProgram->setMat4("model", model);
-    cube.drawSceneObject();
+void drawFloor(glm::mat4 model)
+{
+    activeShader->setMat4("model", model);
+    floorObj.draw(GL_TRIANGLES);
 }
 
-void drawPlane(glm::mat4 model){
-    // draw plane body and right wing
-    shaderProgram->setMat4("model", model);
-    planeBody.drawSceneObject();
-    planeWing.drawSceneObject();
-
-    // propeller,
-    glm::mat4 propeller = model * glm::translate(.0f, .5f, .0f) *
-                          glm::rotate(currentTime * 10.0f, glm::vec3(0.0,1.0,0.0)) *
-                          glm::rotate(glm::half_pi<float>(), glm::vec3(1.0,0.0,0.0)) *
-                          glm::scale(.5f, .5f, .5f);
-
-    shaderProgram->setMat4("model", propeller);
-    planePropeller.drawSceneObject();
-
-    // right wing back,
-    glm::mat4 wingRightBack = model * glm::translate(0.0f, -0.5f, 0.0f) * glm::scale(.5f,.5f,.5f);
-    shaderProgram->setMat4("model", wingRightBack);
-    planeWing.drawSceneObject();
-
-    // left wing,
-    glm::mat4 wingLeft = model * glm::scale(-1.0f, 1.0f, 1.0f);
-    shaderProgram->setMat4("model", wingLeft);
-    planeWing.drawSceneObject();
-
-    // left wing back,
-    glm::mat4 wingLeftBack =  model *  glm::translate(0.0f, -0.5f, 0.0f) * glm::scale(-.5f,.5f,.5f);
-    shaderProgram->setMat4("model", wingLeftBack);
-    planeWing.drawSceneObject();
+void drawCube(glm::mat4 model)
+{
+    activeShader->setMat4("model", model);
+    cube.draw(GL_TRIANGLES);
 }
 
-void drawParticles(glm::mat4 model){
-    particleShaderProgram->setMat4("model", model);
-    particleShaderProgram->setMat4("prevModel", previousPVMatrix);
-    particleShaderProgram->setVec3("camForward", camForward);
-    particleShaderProgram->setVec3("camPosition", camPosition);
-    particleShaderProgram->setFloat("boxSize", boxSize);
-    particleShaderProgram->setInt("moving", moving);
-
-    for (int i = 0; i < gravityOffsets.size(); i++) {
-        particleShaderProgram->setVec3("offset", glm::mod(((gravityOffsets[i] + windOffsets[i]) - (camPosition + camForward + glm::vec3(boxSize / 2))), glm::vec3(boxSize)));
-        particles.drawSceneObject();
-    }
+void drawParticles(glm::mat4 model)
+{
+    activeShader->setMat4("model", model);
+    int drawType = (RAIN) ? GL_LINES : GL_POINTS;
+    particleBox.draw(drawType);
 }
 
-void setup(){
-    // initialize shaders
-    shaderProgram = new Shader("shaders/shader.vert", "shaders/shader.frag");
-    particleShaderProgram = new Shader("shaders/particle_shader.vert", "shaders/particle_shader.frag");
+void generateParticles(std::vector<float> &particleVertices,
+                       std::vector<unsigned int> &particleIndices,
+                       std::vector<float> &particleColors,
+                       int numberOfParticles)
+{
+    // If simulating rain, each vertex position and color is pushed twice
+    int count = (RAIN) ? 2 : 1;
 
-    // load floor mesh into openGL
-    floorObj.VAO = createVertexArray(floorVertices, floorColors, floorIndices);
-    floorObj.vertexCount = floorIndices.size();
+    for (int particle = 0; particle < numberOfParticles; particle += count) {
+        // Vertex coords
+        float xVal = BOX_SIZE + (float) rand() / ((float) RAND_MAX / BOX_SIZE);
+        float yVal = BOX_SIZE + (float) rand() / ((float) RAND_MAX / BOX_SIZE);
+        float zVal = BOX_SIZE + (float) rand() / ((float) RAND_MAX / BOX_SIZE);
 
-    // load cube mesh into openGL
-    cube.VAO = createVertexArray(cubeVertices, cubeColors, cubeIndices);
-    cube.vertexCount = cubeIndices.size();
+        for (int i = 0; i < count; i++) {
+            // Vertex position
+            particleVertices.push_back(xVal);
+            particleVertices.push_back(yVal);
+            particleVertices.push_back(zVal);
 
-    // load plane meshes into openGL
-    planeBody.VAO = createVertexArray(planeBodyVertices, planeBodyColors, planeBodyIndices);
-    planeBody.vertexCount = planeBodyIndices.size();
+            // Vertex color
+            for (int color = 0; color < 4; color++) {
+                particleColors.push_back(1.f);
+            }
 
-    planeWing.VAO = createVertexArray(planeWingVertices, planeWingColors, planeWingIndices);
-    planeWing.vertexCount = planeWingIndices.size();
-
-    planePropeller.VAO = createVertexArray(planePropellerVertices, planePropellerColors, planePropellerIndices);
-    planePropeller.vertexCount = planePropellerIndices.size();
-
-    // create particles at random locations
-    std::vector<float> particlePositions;
-    for (int i = 0; i < particleVertexBufferSize * 3; i++) {
-        float x = (float)rand()/RAND_MAX,
-            y = (float)rand()/RAND_MAX,
-            z = (float)rand()/RAND_MAX;
-
-        for (int j = 0; j < 2; j++) {
-            particlePositions.push_back(x);
-            particlePositions.push_back(y);
-            particlePositions.push_back(z);
+            // Vertex index
+            particleIndices.push_back(particle + i);
         }
-        // if (i % 50 == 0) std::cout << i << ": (" << x << ", " << y << ", " << z << ")" << std::endl;
     }
-    particles.VAO = createVertexArray(particlePositions, std::vector<float> {}, std::vector<unsigned int> {});
 }
 
-unsigned int createVertexArray(const std::vector<float> &positions, const std::vector<float> &colors, const std::vector<unsigned int> &indices){
+void generateOffsets(std::vector<glm::vec3> &gravityOffsets,
+                     std::vector<glm::vec3> &windOffsets,
+                     std::vector<glm::vec3> &randomOffsets,
+                     int numberOfOffsets)
+{
+    for (int i = 0; i < numberOfOffsets; i++) {
+        float gravY = -1.f + ((float) rand() / (RAND_MAX / .5f));
+        glm::vec3 randomGravity = glm::vec3(0.f, gravY, 0.f);
+
+        float randX = (float) rand() / (float) RAND_MAX;
+        float randY = (float) rand() / (float) RAND_MAX;
+        float randZ = (float) rand() / (float) RAND_MAX;
+        glm::vec3 randomRandom = glm::vec3(randX, randY, randZ);
+
+        float windX = -1.f + ((float) rand() / (RAND_MAX / 2.f));
+        float windZ = -1.f + ((float) rand() / (RAND_MAX / 2.f));
+        glm::vec3 randomWind = glm::vec3(randX, 0.f, randZ);
+
+        gravityOffsets.push_back(randomGravity);
+        windOffsets.push_back(randomWind);
+        randomOffsets.push_back(randomRandom);
+        
+        #if __DEBUG__
+            std::cout << "Offsets generated by generateOffsets:" << std::endl;
+            std::cout << randomGravity << " " << randomWind << " " << randomRandom << std::endl;
+        #endif
+    }
+}
+
+unsigned int createVertexArray(const std::vector<float> &positions,
+                               const std::vector<float> &colors, 
+                               const std::vector<unsigned int> &indices)
+{
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
-    // bind vertex array object
+    // Bind the VAO
     glBindVertexArray(VAO);
 
-    if (positions.empty()) return VAO;
-    // set vertex shader attribute "pos"
-    createArrayBuffer(positions); // creates and bind  the VBO
-    int posAttributeLocation = glGetAttribLocation(shaderProgram->ID, "pos");
+    // Set the vertex shader attribute "pos"
+    createArrayBuffer(positions); // Create and bind the VBO
+    int posAttributeLocation = glGetAttribLocation(activeShader->ID, "pos");
     glEnableVertexAttribArray(posAttributeLocation);
     glVertexAttribPointer(posAttributeLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    if (colors.empty()) return VAO;
-    // set vertex shader attribute "color"
-    createArrayBuffer(colors); // creates and bind the VBO
-    int colorAttributeLocation = glGetAttribLocation(shaderProgram->ID, "color");
+    // Set the vertex shader attribute "color"
+    createArrayBuffer(colors); // Create and bind the VBO
+    int colorAttributeLocation = glGetAttribLocation(activeShader->ID, "color");
     glEnableVertexAttribArray(colorAttributeLocation);
     glVertexAttribPointer(colorAttributeLocation, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-    if (indices.empty()) return VAO;
-    // creates and bind the EBO
+    // Create and bind the EBO
     createElementArrayBuffer(indices);
 
     return VAO;
 }
 
-unsigned int createArrayBuffer(const std::vector<float> &array){
+unsigned int createArrayBuffer(const std::vector<float> &array)
+{
     unsigned int VBO;
     glGenBuffers(1, &VBO);
 
@@ -365,7 +373,8 @@ unsigned int createArrayBuffer(const std::vector<float> &array){
     return VBO;
 }
 
-unsigned int createElementArrayBuffer(const std::vector<unsigned int> &array){
+unsigned int createElementArrayBuffer(const std::vector<unsigned int> &array)
+{
     unsigned int EBO;
     glGenBuffers(1, &EBO);
 
@@ -375,72 +384,66 @@ unsigned int createElementArrayBuffer(const std::vector<unsigned int> &array){
     return EBO;
 }
 
-// NEW!
-// instead of using the NDC to transform from screen space you can now define the range using the
-// min and max parameters
-void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float &x, float &y){
+void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float &x, float &y)
+{
     float sum = max - min;
     float xInRange = (float) screenX / (float) screenW * sum - sum/2.0f;
     float yInRange = (float) screenY / (float) screenH * sum - sum/2.0f;
     x = xInRange;
-    y = -yInRange; // flip screen space y axis
+    y = -yInRange;
 }
 
-void cursor_input_callback(GLFWwindow* window, double posX, double posY){
+void cursor_input_callback(GLFWwindow* window, double posX, double posY)
+{
+    int screenW, screenH;
+    glfwGetWindowSize(window, &screenW, &screenH);
+    glm::vec2 cursorPosition(0.0f);
+    cursorInRange((float) posX, (float) posY, screenW, screenH, -1.0f, 1.0f, cursorPosition.x, cursorPosition.y);
 
-    camForward.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    camForward.y = sin(glm::radians(pitch));
-    camForward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    static glm::vec2 lastCursorPosition = cursorPosition;
+    glm::vec2 positionDiff = cursorPosition - lastCursorPosition;
 
-    float xoffset = posX - previousPos.x;
-    float yoffset = previousPos.y - posY; // reversed since y-coordinates range from bottom to top
-    previousPos = glm::vec2(posX, posY);
+    static float rotationAroundVertical = 0;
+    static float rotationAroundLateral  = 0;
+    if (glm::dot(positionDiff, positionDiff) > 1e-5f){
+        cameraFront = glm::vec3 (0, 0, -1);
+        // rotate the forward vector around the Y axis, notices that w is set to 0 since it is a vector
+        rotationAroundVertical += glm::radians(-positionDiff.x * rotationGain);
+        cameraFront = glm::rotateY(rotationAroundVertical) * glm::vec4(cameraFront, 0.0f);
 
-    const float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
+        // rotate the forward vector around the lateral axis
+        rotationAroundLateral += glm::radians(positionDiff.y * rotationGain);
+        // we need to clamp the range of the rotation, otherwise forward and Y axes get parallel
+        rotationAroundLateral  = glm::clamp(rotationAroundLateral, -glm::half_pi<float>() * 0.9f, glm::half_pi<float>() * 0.9f);
 
-    yaw += xoffset;
-    pitch += yoffset;
-    if(pitch > 89.0f)
-        pitch =  89.0f;
-    if(pitch < -89.0f)
-        pitch = -89.0f;
+        glm::vec3 lateralAxis  = glm::cross(cameraFront, glm::vec3(0, 1,0));
 
-    camForward = glm::normalize(camForward);
-    moving = 1;
+        cameraFront = glm::rotate(rotationAroundLateral, lateralAxis) * glm::vec4(cameraFront, 0);
+
+        lastCursorPosition = cursorPosition;
+    }
 }
 
-void processInput(GLFWwindow *window) {
-
+void processInput(GLFWwindow *window) 
+{
+    // Exits on pressing the Escape key
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    // WASD movement
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
-        camPosition += linearSpeed * camForward;
-        moving = 0;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
-        camPosition -= linearSpeed * camForward;
-        moving = 0;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
-        camPosition -= glm::normalize(glm::cross(camForward, glm::vec3(0, 1, 0))) * linearSpeed;
-        moving = 0;
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
-        camPosition += glm::normalize(glm::cross(camForward, glm::vec3(0, 1, 0))) * linearSpeed;
-        moving = 0;
-    }
+    glm::vec3 feetOnTheGround = glm::normalize(glm::vec3(cameraFront.x, 0.f, cameraFront.z));
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * feetOnTheGround;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * feetOnTheGround;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * (glm::cross(feetOnTheGround, 
+                                    glm::vec3(0.f, 1.f, 0.f)));
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += cameraSpeed * (glm::cross(feetOnTheGround,
+                                    glm::vec3(0.f, 1.f, 0.f)));
 }
 
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
