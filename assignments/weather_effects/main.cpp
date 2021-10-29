@@ -25,25 +25,30 @@ struct SceneObject{
 // structure to hold particles info
 // -----------------------------
 const float LINE_LENGTH = 0.05f;
-const unsigned int particleVertexBufferSize = 100;// TODO increase (max)65536;    // # of particles
-std::vector<glm::vec3> gravityOffsets = { // TODO: 20 offsets were what the paper thought was good (ALSO implement windOffsets)
+const unsigned int particleVertexBufferSize = 100; // # of particles
+std::vector<glm::vec3> gravityOffsets = { // TODO: 20 offsets were what the paper thought was good
+        glm::vec3 (0),
+        glm::vec3 (0),
         glm::vec3 (0),
         glm::vec3 (0),
         glm::vec3 (0)
 },
 gravityDeltas = {
-        glm::vec3(0, -0.02f, 0),
-        glm::vec3(0, -0.04f, 0),
-        glm::vec3(0, -0.01f, 0)
+        glm::vec3(0, -0.05f, 0),
+        glm::vec3(0, -0.08f, 0),
+        glm::vec3(0, -0.06f, 0),
+        glm::vec3(0, -0.10f, 0),
+        glm::vec3(0, -0.07f, 0)
 },
 windOffsets = {
+        glm::vec3 (0),
+        glm::vec3 (0),
         glm::vec3 (0),
         glm::vec3 (0),
         glm::vec3 (0)
 };
 
 const unsigned int boxSize = 1.0f;
-
 struct ParticleObject {
     unsigned int VAO;
     unsigned int VBO;
@@ -72,7 +77,6 @@ void cursor_input_callback(GLFWwindow* window, double posX, double posY);
 void drawCube(glm::mat4 model);
 void drawPlane(glm::mat4 model);
 void drawParticles(glm::mat4 model);
-void emitParticle(float x, float y, float z);
 
 // screen settings
 // ---------------
@@ -95,6 +99,7 @@ Shader* particleShaderProgram;
 float currentTime;
 glm::vec3 camForward(.0f, .0f, -1.0f);
 glm::vec3 camPosition(.0f, 1.6f, 0.0f);
+int moving = 0; // lazy solution for fixing hyper speed effect
 float linearSpeed = 0.15f, rotationGain = 30.0f;
 float yaw = -90.0f, pitch;
 glm::vec2 previousPos = glm::vec2(SCR_WIDTH / 2, SCR_HEIGHT / 2); // center
@@ -139,6 +144,9 @@ int main()
     // ---------------------------------------
     setup();
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // set up the z-buffer
     // Notice that the depth range is now set to glDepthRange(-1,1), that is, a left handed coordinate system.
     // That is because the default openGL's NDC is in a left handed coordinate system (even though the default
@@ -164,20 +172,17 @@ int main()
         currentTime = appTime.count();
 
         processInput(window);
-
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
         // notice that we also need to clear the depth buffer (aka z-buffer) every new frame
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shaderProgram->use();
         drawObjects();
-
         // update offsets
         for (int i = 0; i < gravityOffsets.size(); i++) {
             gravityOffsets[i] += gravityDeltas[i];
 
-            // windOffsets[i] += glm::vec3((((float)rand()/RAND_MAX) * 2 - 1) / 100, 0, (((float)rand()/RAND_MAX) * 2 - 1) / 100);
+            windOffsets[i] += glm::vec3((((float)rand()/RAND_MAX) * 2 - 1) / 100, 0, (((float)rand()/RAND_MAX) * 2 - 1) / 100);
         }
 
         glfwSwapBuffers(window);
@@ -199,8 +204,8 @@ int main()
     return 0;
 }
 
-
 void drawObjects(){
+    shaderProgram->use();
 
     glm::mat4 scale = glm::scale(1.f, 1.f, 1.f);
 
@@ -225,12 +230,12 @@ void drawObjects(){
     drawPlane(viewProjection * glm::translate(2.0f, .5f, -2.0f) * glm::rotateX(glm::quarter_pi<float>() * 3.f) * scale);
 
     // draw particles
+    particleShaderProgram->use();
     drawParticles(viewProjection);
 
     // save old view projection matrix
     previousPVMatrix = viewProjection;
 }
-
 
 void drawCube(glm::mat4 model){
     // draw object
@@ -270,16 +275,15 @@ void drawPlane(glm::mat4 model){
 }
 
 void drawParticles(glm::mat4 model){
-    particleShaderProgram->use();
-
     particleShaderProgram->setMat4("model", model);
     particleShaderProgram->setMat4("prevModel", previousPVMatrix);
     particleShaderProgram->setVec3("camForward", camForward);
     particleShaderProgram->setVec3("camPosition", camPosition);
     particleShaderProgram->setFloat("boxSize", boxSize);
+    particleShaderProgram->setInt("moving", moving);
 
     for (int i = 0; i < gravityOffsets.size(); i++) {
-        particleShaderProgram->setVec3("offset", (gravityOffsets[i] + windOffsets[i]));
+        particleShaderProgram->setVec3("offset", glm::mod(((gravityOffsets[i] + windOffsets[i]) - (camPosition + camForward + glm::vec3(boxSize / 2))), glm::vec3(boxSize)));
         particles.drawSceneObject();
     }
 }
@@ -321,7 +325,6 @@ void setup(){
         }
         // if (i % 50 == 0) std::cout << i << ": (" << x << ", " << y << ", " << z << ")" << std::endl;
     }
-
     particles.VAO = createVertexArray(particlePositions, std::vector<float> {}, std::vector<unsigned int> {});
 }
 
@@ -405,6 +408,7 @@ void cursor_input_callback(GLFWwindow* window, double posX, double posY){
         pitch = -89.0f;
 
     camForward = glm::normalize(camForward);
+    moving = 1;
 }
 
 void processInput(GLFWwindow *window) {
@@ -413,16 +417,22 @@ void processInput(GLFWwindow *window) {
         glfwSetWindowShouldClose(window, true);
 
     // WASD movement
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
         camPosition += linearSpeed * camForward;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        moving = 0;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
         camPosition -= linearSpeed * camForward;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        moving = 0;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
         camPosition -= glm::normalize(glm::cross(camForward, glm::vec3(0, 1, 0))) * linearSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        moving = 0;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
         camPosition += glm::normalize(glm::cross(camForward, glm::vec3(0, 1, 0))) * linearSpeed;
-    // if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
-        // emitParticle(5, 5, 5);
+        moving = 0;
+    }
 }
 
 

@@ -3,5 +3,6 @@ out vec4 FragColor;
 in  vec4 vtxColor;
 void main()
 {
-   FragColor = vtxColor;
+   vec4 color = vec4(vtxColor.xyz, 1.f);
+   FragColor = color;
 }
