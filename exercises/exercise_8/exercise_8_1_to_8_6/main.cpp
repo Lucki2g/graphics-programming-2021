@@ -132,6 +132,7 @@ int main()
     carWheel = new Model("car/Wheel_LOD0.obj");
     floorModel = new Model("floor/floor.obj");
 
+
     // set up the z-buffer
     // -------------------
     glDepthRange(-1,1); // make the NDC a right handed coordinate system, with the camera pointing towards -z
@@ -258,13 +259,24 @@ void drawObjects(){
     // camera position
     shader->setVec3("camPosition", camera.Position);
 
-    // TODO exercise 8 - set the missing uniform variables here
     // light uniforms
+    // ambient
+    shader->setVec3("ambientColor", config.ambientLightColor * config.ambientLightIntensity);
+    shader->setVec3("reflectionColor", config.reflectionColor);
+    shader->setFloat("ambientReflectance", config.ambientReflectance);
+    // diffuse
+    shader->setVec3("lightPos", config.light1Position);
+    shader->setVec3("lightColor", config.light1Color * config.light1Intensity);
+    shader->setFloat("diffuseReflectance", config.diffuseReflectance);
+    // specular
+    shader->setFloat("specularReflectance", config.specularReflectance);
+    shader->setFloat("specularExponent", config.specularExponent);
 
     // material uniforms
 
     // attenuation uniforms
-
+    shader->setVec3("lightPos2", config.light2Position);
+    shader->setVec3("lightColor2", config.light2Color * config.light2Intensity);
 
 
     // the typical transformation uniforms are already set for you, these are:

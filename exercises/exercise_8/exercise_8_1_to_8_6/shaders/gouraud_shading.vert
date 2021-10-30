@@ -12,12 +12,23 @@ uniform vec3 camPosition; // so we can compute the view vector (could be extract
 // send shaded color to the fragment shader
 out vec4 shadedColor;
 
-// TODO exercise 8 setup the uniform variables needed for lighting
 // light uniform variables
+uniform vec3 ambientColor;
+uniform vec3 reflectionColor;
+uniform float ambientReflectance;
+
+uniform vec3 lightPos;
+uniform vec3 lightColor;
+uniform float diffuseReflectance;
+
+uniform float specularReflectance;
+uniform float specularExponent;
 
 // material properties
 
 // attenuation uniforms
+uniform vec3 lightPos2;
+uniform vec3 lightColor2;
 
 
 void main() {
@@ -28,19 +39,36 @@ void main() {
 
    // final vertex transform (for opengl rendering, not for lighting)
    gl_Position = projection * view * P;
+   vec3 P3 = vec3(P);
 
    // TODO exercises 8.1, 8.2 and 8.3 - Gouraud shading (i.e. Phong reflection model computed in the vertex shader)
 
    // TODO 8.1 ambient
+   vec3 ambient = vec3(ambientColor * reflectionColor * ambientReflectance);
 
    // TODO 8.2 diffuse
+   vec3 L = normalize(lightPos - P3);
+   vec3 diffuse = vec3(lightColor * diffuseReflectance * dot(N, L));
 
-   // TODO 8.3 specular
+   // TODO 8.3 specular - something seems of here .------.?
+   vec3 V = normalize(camPosition - P3);
+   vec3 R = 2 * N * dot(N, L) - L;
+   // vec3 R = reflect(-L, N);
+   vec3 specularPhong = lightColor * specularReflectance * pow(max(dot(R, V), 0.0), specularExponent);
 
-   // TODO exercise 8.6 - attenuation - light 1
+   // Blinn specular
+   vec3 H = (L + V) / length(L + V);
+   vec3 specularBlinn = lightColor * specularReflectance * pow(dot(N, H), specularExponent);
+
+   // TODO exercise 8.6 - attenuation - light 2
+   vec3 L2 = normalize(lightPos2 - P3);
+   vec3 diffuse2 = vec3(lightColor2 * diffuseReflectance * dot(N, L2));
+
+   vec3 R2 = 2 * N * dot(N, L2) - L2;
+   vec3 specularPhong2 = lightColor * specularReflectance * pow(max(dot(R2, V), 0.0), specularExponent);
 
 
    // TODO set the output color to the shaded color that you have computed
-   shadedColor = vec4(.8, .8, .8, 1.0);
+   shadedColor = vec4((ambient + (diffuse + specularPhong) + (diffuse2 + specularPhong2)) * vec3(.8), 1.0);
 
 }
