@@ -32,7 +32,8 @@ class TerrainRenderer {
 
         void loadTerrain(Terrain* terrain, TerrainShader* shader) {
             glm::mat4 position = glm::translate(glm::vec3(terrain->getX(), 0, terrain->getZ()));
-            shader->loadTransformationMatrix(position);
+            shader->loadTransformationMatrix(glm::mat4(1.0f));
+            glDrawElements(GL_TRIANGLES, terrain->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
         }
 
     public:
@@ -43,13 +44,8 @@ class TerrainRenderer {
 
         void render(TerrainShader* shader) {
             for (Terrain* terrain : terrains) {
-                // prepare
                 bind(terrain);
-                // load
                 loadTerrain(terrain, shader);
-                // render
-                glDrawElements(GL_TRIANGLES, terrain->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
-                // clean
                 unbind();
             }
         }

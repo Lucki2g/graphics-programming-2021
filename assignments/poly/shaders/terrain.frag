@@ -1,4 +1,6 @@
 #version 400 core
+out vec4 FragColor;
+
 in vec3 surfaceNormal;
 in vec3 toLightVector;
 
@@ -14,5 +16,5 @@ void main(void) {
     vec3 color = vec3(0, 0, 0);
     vec3 diffuse = brightness * lightColour;
 
-    gl_FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, 1.0);
 }
