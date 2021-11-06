@@ -6,7 +6,7 @@
 #define ITU_GRAPHICS_PROGRAMMING_ENTITY_H
 
 #include "../engine/model.h"
-#include "../glmutils.h"
+#include "util/glmutils.h"
 
 class Entity {
     private:

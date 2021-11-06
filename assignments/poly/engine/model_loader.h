@@ -17,10 +17,11 @@ class Loader {
         std::vector<GLuint> vbos;
 
     public:
-        Model* loadToVao(const std::vector<float> &positions, const std::vector<unsigned int> indices) {
+        Model* loadToVao(const std::vector<float> &positions, const std::vector<float> normals, const std::vector<unsigned int> indices) {
             int vao = createVao();
             bindIndicesBuffer(indices);
             storeDataInAttributeList(0, positions);
+            storeDataInAttributeList(1, normals);
             unbindVao();
             return new Model(vao, indices.size());
         }

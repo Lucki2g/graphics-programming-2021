@@ -5,7 +5,7 @@
 #ifndef ITU_GRAPHICS_PROGRAMMING_CAMERA_H
 #define ITU_GRAPHICS_PROGRAMMING_CAMERA_H
 
-#include "../glmutils.h"
+#include "util/glmutils.h"
 
 class Camera {
     private:

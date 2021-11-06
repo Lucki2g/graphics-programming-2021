@@ -25,7 +25,7 @@ file(GLOB target_src "*.h" "*.cpp") # look for source files
 file(GLOB target_shaders "shaders/*.vert" "shaders/*.frag") # look for shaders
 
 set(output_file "poly")
-add_executable(${output_file} ${target_src} ${target_shaders} engine/model.h engine/model_loader.h engine/renderer.h shaders/static_shader.h entities/entity.h entities/camera.h)
+add_executable(${output_file} ${target_src} ${target_shaders} engine/model.h engine/model_loader.h engine/entity_renderer.h shaders/static_shader.h entities/entity.h entities/camera.h entities/light.h util/obj_reader.h util/OBJ_loader.h)
 
 ## set link libraries
 target_link_libraries(${output_file} ${libraries})
@@ -36,6 +36,7 @@ target_include_directories(${output_file} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## copy shaders folder to build folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 ## copy shaders again every time the current target gets compiled
 ## (may require manual compilation if you modify shaders without modifying the C++ source)

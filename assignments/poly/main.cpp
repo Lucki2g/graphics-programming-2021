@@ -4,10 +4,13 @@
 
 #include "engine/window_manager.h"
 #include "engine/model_loader.h"
-#include "engine/renderer.h"
-#include "primitives.h"
+#include "engine/terrain_renderer.h"
+#include "engine/entity_renderer.h"
+#include "util/primitives.h"
 #include "shaders/static_shader.h"
+#include "shaders/terrain_shader.h"
 #include "shaders/shader_program.h"
+#include "util/obj_reader.h"
 
 const int WIDTH = 720, HEIGHT = 560;
 
@@ -17,7 +20,9 @@ int main () {
 
     WindowManager* windowManager = new WindowManager(WIDTH, HEIGHT);
     Loader* loader = new Loader();
-    Renderer* renderer = new Renderer();
+    ObjReader* objloader = new ObjReader();
+    EntityRenderer* entityRenderer = new EntityRenderer();
+    TerrainRenderer* terrainRenderer = new TerrainRenderer();
 
     windowManager->createWindow();
 
@@ -26,36 +31,38 @@ int main () {
     staticShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
     staticShader->Shader::stop();
 
-    const std::vector<float> vertices = {
-            -0.5f, 0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.5f, 0.5f, 0.0f,
-    };
-    const std::vector<unsigned int> indices = {
-            0, 1, 3,
-            3, 1, 2
-    };
+    TerrainShader* terrainShader = new TerrainShader();
+    terrainShader->Shader::start();
+    terrainShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
+    terrainShader->Shader::stop();
 
-    Model* cube = loader->loadToVao(vertices, indices);
-    Model* quad = loader->loadToVao(vertices, indices);
-    Entity* entCube = new Entity(cube, glm::vec3(0.5, 0.5, -1), glm::vec3(0), 1);
-    Entity* ent2 = new Entity(quad, glm::vec3(-1,0,-1), glm::vec3(0), 1);
+    Model* model = objloader->loadObjModel("models/dragon.obj", loader);
+    Entity* entity = new Entity(model, glm::vec3(0, 0, -2), glm::vec3(), 1);
+    entityRenderer->addEntity(entity);
 
+    Light* sun = new Light(glm::vec3(0, 0, -20), glm::vec3(1));
 
-    print("loop");
+    Terrain* terrain = new Terrain(0, 0, loader);
+    terrainRenderer->addTerrain(terrain);
+
     while (!windowManager->shouldClose()) {
         // prepare
-        renderer->prepare();
+        terrainRenderer->prepare();
         // process input
         windowManager->processInput();
         // start shader
+        // entities
         staticShader->Shader::start();
+        staticShader->loadLight(sun);
         staticShader->loadViewMatrix(windowManager->getViewMatrix());
-        // render
-        renderer->render(ent2, staticShader);
-        renderer->render(entCube, staticShader);
+        entityRenderer->render(staticShader);
         staticShader->Shader::stop();
+        // terrain
+        terrainShader->Shader::start();
+        terrainShader->loadLight(sun);
+        terrainShader->loadViewMatrix(windowManager->getViewMatrix());
+        terrainRenderer->render(terrainShader);
+        terrainShader->Shader::stop();
         //update
         windowManager->updateWindow();
     }
