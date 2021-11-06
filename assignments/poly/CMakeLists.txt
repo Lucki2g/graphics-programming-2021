@@ -25,7 +25,7 @@ file(GLOB target_src "*.h" "*.cpp") # look for source files
 file(GLOB target_shaders "shaders/*.vert" "shaders/*.frag") # look for shaders
 
 set(output_file "poly")
-add_executable(${output_file} ${target_src} ${target_shaders} engine/model.h engine/model_loader.h engine/renderer.h shaders/static_shader.h entities/entity.h)
+add_executable(${output_file} ${target_src} ${target_shaders} engine/model.h engine/model_loader.h engine/renderer.h shaders/static_shader.h entities/entity.h entities/camera.h)
 
 ## set link libraries
 target_link_libraries(${output_file} ${libraries})

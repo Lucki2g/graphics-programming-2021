@@ -15,18 +15,17 @@ void print(std::string s);
 
 int main () {
 
-    print("setup");
     WindowManager* windowManager = new WindowManager(WIDTH, HEIGHT);
     Loader* loader = new Loader();
     Renderer* renderer = new Renderer();
 
-    print("create");
     windowManager->createWindow();
 
-    print("shader");
     StaticShader* staticShader = new StaticShader();
+    staticShader->Shader::start();
+    staticShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
+    staticShader->Shader::stop();
 
-    print("quad");
     const std::vector<float> vertices = {
             -0.5f, 0.5f, 0.0f,
             -0.5f, -0.5f, 0.0f,
@@ -39,14 +38,22 @@ int main () {
     };
 
     Model* cube = loader->loadToVao(vertices, indices);
-    Entity* entCube = new Entity(cube, glm::vec3(-1, 0, 0), 1);
+    Model* quad = loader->loadToVao(vertices, indices);
+    Entity* entCube = new Entity(cube, glm::vec3(0.5, 0.5, -1), glm::vec3(0), 1);
+    Entity* ent2 = new Entity(quad, glm::vec3(-1,0,-1), glm::vec3(0), 1);
+
 
     print("loop");
     while (!windowManager->shouldClose()) {
         // prepare
         renderer->prepare();
-        //render
+        // process input
+        windowManager->processInput();
+        // start shader
         staticShader->Shader::start();
+        staticShader->loadViewMatrix(windowManager->getViewMatrix());
+        // render
+        renderer->render(ent2, staticShader);
         renderer->render(entCube, staticShader);
         staticShader->Shader::stop();
         //update

@@ -23,6 +23,14 @@ class StaticShader : public Shader {
         void loadTransformationMatrix(glm::mat4 matrix) {
             Shader::setMat4("transformationMatrix", matrix);
         }
+
+        void loadProjectionMatrix(glm::mat4 matrix) {
+            Shader::setMat4("projectionMatrix", matrix);
+        }
+
+        void loadViewMatrix(glm::mat4 matrix) {
+            Shader::setMat4("viewMatrix", matrix);
+        }
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_STATIC_SHADER_H

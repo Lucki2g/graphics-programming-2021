@@ -12,12 +12,14 @@ class Entity {
     private:
         Model* model;
         glm::vec3 position;
+        glm::vec3 rotation;
         float scale;
 
     public:
-        Entity(Model* model, glm::vec3 pos, float scale) {
+        Entity(Model* model, glm::vec3 pos, glm::vec3 rot, float scale) {
             this->model = model;
             this->position = pos;
+            this->rotation = rot;
             this->scale = scale;
         }
 
@@ -29,8 +31,16 @@ class Entity {
             return position;
         }
 
+        glm::vec3 getRotation() {
+            return rotation;
+        }
+
         float getScale() {
             return scale;
+        }
+
+        void move(glm::vec3 direction) {
+            position += direction;
         }
 };
 
