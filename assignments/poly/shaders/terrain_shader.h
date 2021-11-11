@@ -18,8 +18,9 @@ class TerrainShader : public Shader {
         }
 
         void bindAttributes() {
-            Shader::bindAttribute(0, "position");
-            Shader::bindAttribute(1, "normal");
+            Shader::bindAttribute(0, "in_position");
+            Shader::bindAttribute(1, "in_normal");
+            Shader::bindAttribute(2, "in_colour");
         }
 
         void loadTransformationMatrix(glm::mat4 matrix) {

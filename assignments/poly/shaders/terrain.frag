@@ -3,6 +3,7 @@ out vec4 FragColor;
 
 in vec3 surfaceNormal;
 in vec3 toLightVector;
+in vec3 out_colour;
 
 uniform vec3 lightColour;
 
@@ -13,8 +14,7 @@ void main(void) {
 
     float brightness = max(dot(N, L), 0.0f);
 
-    vec3 color = vec3(0, 0, 0);
     vec3 diffuse = brightness * lightColour;
 
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(out_colour, 1.0);
 }

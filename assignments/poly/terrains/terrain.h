@@ -8,6 +8,7 @@
 #include "../engine/model.h"
 #include "../engine/model_loader.h"
 #include "heights_generator.h"
+#include "../generation/colour_generator.h"
 
 class Terrain {
     private:
@@ -15,6 +16,7 @@ class Terrain {
         const int VERTEX_COUNT = 128;
 
         float x, z;
+        ColourGenerator* colourGenerator;
         Model* model;
 
         float getHeight(int x, int z, HeightsGenerator* generator) {
@@ -59,6 +61,7 @@ class Terrain {
 
             std::vector<float> positions;
             std::vector<float> normals;
+            std::vector<float> colours;
             std::vector<unsigned int> indices;
 
             for (int i = 0; i < VERTEX_COUNT; i++) {
@@ -72,6 +75,12 @@ class Terrain {
                     normals.push_back(normal.x);
                     normals.push_back(normal.y);
                     normals.push_back(normal.z);
+
+                    glm::vec3 colour = glm::normalize(colourGenerator->getColour(height, generator->getAmplitude()));
+                    colours.push_back(colour.x);
+                    colours.push_back(colour.y);
+                    colours.push_back(colour.z);
+                    //std::cout << colour.x << "\t" << colour.y << "\t" << colour.z << std::endl;
                 }
             }
 
@@ -90,7 +99,7 @@ class Terrain {
                 }
             }
 
-            return loader->loadToVao(positions, normals, indices);
+            return loader->loadToVao(positions, normals, colours, indices);
         }
 
         Model* generateTerrain(Loader* loader) {
@@ -128,9 +137,10 @@ class Terrain {
         }
 
     public:
-        Terrain(int gridX, int gridZ, Loader* loader) {
+        Terrain(int gridX, int gridZ, Loader* loader, ColourGenerator* colourGenerator) {
             this->x = gridX * SIZE;
             this->z = gridZ * SIZE;
+            this->colourGenerator = colourGenerator;
             // this->model = generateTerrain(loader);
             // this->model = generateTerrain(loader);
             this->model = proceduralTerrain(loader);

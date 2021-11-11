@@ -25,6 +25,10 @@ class HeightsGenerator {
             float y = noise->getPerlinNoise(x, z);
             return y;
         }
+
+        float getAmplitude() {
+            return AMPLITUDE;
+        }
 };
 
 

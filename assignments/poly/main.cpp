@@ -24,6 +24,8 @@ int main () {
     EntityRenderer* entityRenderer = new EntityRenderer();
     TerrainRenderer* terrainRenderer = new TerrainRenderer();
 
+    ColourGenerator* colourGenerator = new ColourGenerator();
+
     windowManager->createWindow();
 
     StaticShader* staticShader = new StaticShader();
@@ -42,7 +44,7 @@ int main () {
 
     Light* sun = new Light(glm::vec3(0, 0, -20), glm::vec3(1));
 
-    Terrain* terrain = new Terrain(0, 0, loader);
+    Terrain* terrain = new Terrain(0, 0, loader, colourGenerator);
     terrainRenderer->addTerrain(terrain);
 
     while (!windowManager->shouldClose()) {

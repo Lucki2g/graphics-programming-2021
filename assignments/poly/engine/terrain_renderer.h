@@ -22,11 +22,13 @@ class TerrainRenderer {
             glBindVertexArray(model->getVao());
             glEnableVertexAttribArray(0); // positions
             glEnableVertexAttribArray(1); // normals
+            glEnableVertexAttribArray(2); // colours
         }
 
         void unbind() {
             glDisableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
+            glEnableVertexAttribArray(2);
             glBindVertexArray(0);
         }
 

@@ -68,6 +68,7 @@ class WindowManager {
         const float FOV = 70.0f;
         const float NEAR = 0.1f;
         const float FAR = 1000.0f;
+        const float SPEED = 0.2f;
 
     /****************************
      *       CONSTRUCTOR        *
@@ -145,13 +146,13 @@ class WindowManager {
             glfwSetWindowShouldClose(window, true);
 
         if (glfwGetKey(window, GLFW_KEY_W) == press)
-            camera->move(0.02f * camera->getForward());
+            camera->move(SPEED * camera->getForward());
         if (glfwGetKey(window, GLFW_KEY_S) == press)
-            camera->move(-0.02f * camera->getForward());
+            camera->move(-SPEED * camera->getForward());
         if (glfwGetKey(window, GLFW_KEY_A) == press)
-            camera->move(-0.02f * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
+            camera->move(-SPEED * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
         if (glfwGetKey(window, GLFW_KEY_D) == press)
-            camera->move(0.02f * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
+            camera->move(SPEED * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
     }
 };
 
