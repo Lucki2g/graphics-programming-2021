@@ -37,7 +37,16 @@ class TerrainShader : public Shader {
 
         void loadLight(Light* light) {
             Shader::setVec3("lightPosition", light->getPosition());
-            Shader::setVec3("lightColour", light->getColour());
+            Shader::setVec3("lightColour", light->getColour() * light->getIntensity());
+        }
+
+        void loadAmbientLighting(glm::vec3 colour, float intensity, float reflectance) {
+            Shader::setVec3("ambientLightColour", colour * intensity);
+            Shader::setFloat("ambientReflectance", reflectance);
+        }
+
+        void loadDiffuseLighting(float reflectance) {
+            Shader::setFloat("diffuseReflectance", reflectance);
         }
 };
 

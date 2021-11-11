@@ -7,14 +7,26 @@ in vec3 out_colour;
 
 uniform vec3 lightColour;
 
-void main(void) {
+uniform vec3 ambientLightColour;
+uniform float ambientReflectance;
 
-    vec3 N = normalize(surfaceNormal);
+uniform float diffuseReflectance;
+
+vec3 lighting() {
+    // ambient
+    vec3 ambient = ambientLightColour * ambientReflectance * out_colour;
+
+    // diffuse light 1
     vec3 L = normalize(toLightVector);
-
+    vec3 N = normalize(surfaceNormal);
     float brightness = max(dot(N, L), 0.0f);
+    vec3 diffuse = lightColour * diffuseReflectance * brightness * out_colour;
 
-    vec3 diffuse = brightness * lightColour;
+    return ambient + diffuse;
+    // return (lightColour * 0.3f) + (brightness * lightColour * 0.8f);
+}
 
-    FragColor = vec4(out_colour, 1.0);
+void main(void) {
+    vec3 light = lighting();
+    FragColor = vec4(light, 1.0);
 }

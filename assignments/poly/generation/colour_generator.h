@@ -8,30 +8,27 @@
 #include <vector>
 #include "../util/glmutils.h"
 class ColourGenerator {
-    const std::vector<glm::vec3> PALLET = {
-            glm::vec3(201, 178, 99),
-            glm::vec3(135, 184, 82),
-            glm::vec3(80, 171, 93),
-            glm::vec3(120, 120, 120),
-            glm::vec3(200, 200, 210)
-    };
 
-    const float SPREAD = 0.45f,
-            HALF_SPREAD = SPREAD / 2.0f,
-            PART = 1.0f / (PALLET.size() - 1);
+    private:
+        Config* config;
 
-    float clamp(float n, float lower, float upper) {
-        return std::max(lower, std::min(n, upper));
-    }
+        float clamp(float n, float lower, float upper) {
+            this->config = config;
+            return std::max(lower, std::min(n, upper));
+        }
 
     public:
+        ColourGenerator(Config* config) {
+            this->config = config;
+        }
+
         glm::vec3 getColour(float height, float amplitude) {
             float v = (height + amplitude) / (amplitude * 2);
-            v = clamp((v - HALF_SPREAD) * (1.0f / SPREAD), 0.0f, 0.9999f);
-            int fst = std::floor(v / PART);
-            float blend = (v - (fst * PART)) / PART;
-            glm::vec3 c1 = PALLET[fst];
-            glm::vec3 c2 = PALLET[fst + 1];
+            v = clamp((v - config->half_spread) * (1.0f / config->spread), 0.0f, 0.9999f);
+            int fst = std::floor(v / config->part);
+            float blend = (v - (fst * config->part)) / config->part;
+            glm::vec3 c1 = config->pallet[fst];
+            glm::vec3 c2 = config->pallet[fst + 1];
             return c1;
             //return glm::mix(c1, c2, blend);
         }

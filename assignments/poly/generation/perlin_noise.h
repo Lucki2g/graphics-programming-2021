@@ -7,20 +7,17 @@
 
 #include <stdlib.h>
 #include <cstdlib>
-#include <cmath>
 
 const float PI = 3.14157685;
 
 class PerlinNoise {
 private:
     int seed;
-    float  roughness;
-    int octaves;
-    float  amplitude;
+    Config* config;
 
     float interpolate(float a, float b, float blend) {
         double theta = blend * PI;
-        float f = (float) (1.0f - cos(glm::radians(theta))) * 0.5f;
+        float f = 1.0f - std::cos(glm::radians(theta)) * 0.5f;
         return a * (1.0f - f) + b * f;
     }
 
@@ -53,31 +50,25 @@ private:
     }
 
 public:
-    PerlinNoise(int seed, int octaves, float amplitude, float  roughness) {
+    PerlinNoise(int seed, Config* config) {
         if (seed == -1)
             this->seed = rand() % 1000000000;
         else
             this->seed = seed;
 
-        this->roughness = roughness;
-        this->octaves = octaves;
-        this->amplitude = amplitude;
+        this->config = config;
     }
 
     int getSeed() {
         return seed;
     }
 
-    float getAmplitude() {
-        return amplitude;
-    }
-
     float getPerlinNoise(int x, int z) {
         float total = 0;
-        float d = (float) pow(2, octaves - 1);
-        for (int i = 0; i < octaves; i++) {
-            float freq = (float) (pow(2, i) / d);
-            float amp = (float) (pow(roughness, i) * amplitude);
+        float d = std::pow(2, config->octaves - 1);
+        for (int i = 0; i < config->octaves; i++) {
+            float freq = std::pow(2, i) / d;
+            float amp = std::pow(config->roughness, i) * config->amplitude;
             total += getInterpolatedNoise(x * freq, z * freq) * amp;
         }
         return total;

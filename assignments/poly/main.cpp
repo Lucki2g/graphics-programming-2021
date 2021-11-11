@@ -12,19 +12,18 @@
 #include "shaders/shader_program.h"
 #include "util/obj_reader.h"
 
-const int WIDTH = 720, HEIGHT = 560;
-
 void print(std::string s);
 
 int main () {
+    Config* config = new Config();
 
-    WindowManager* windowManager = new WindowManager(WIDTH, HEIGHT);
+    WindowManager* windowManager = new WindowManager(config);
     Loader* loader = new Loader();
     ObjReader* objloader = new ObjReader();
     EntityRenderer* entityRenderer = new EntityRenderer();
     TerrainRenderer* terrainRenderer = new TerrainRenderer();
 
-    ColourGenerator* colourGenerator = new ColourGenerator();
+    ColourGenerator* colourGenerator = new ColourGenerator(config);
 
     windowManager->createWindow();
 
@@ -36,16 +35,19 @@ int main () {
     TerrainShader* terrainShader = new TerrainShader();
     terrainShader->Shader::start();
     terrainShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
+    terrainShader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
+    terrainShader->loadDiffuseLighting(config->diffuseReflectance);
     terrainShader->Shader::stop();
 
     //Model* model = objloader->loadObjModel("models/dragon.obj", loader);
     //Entity* entity = new Entity(model, glm::vec3(0, 0, -2), glm::vec3(), 1);
     //entityRenderer->addEntity(entity);
 
-    Light* sun = new Light(glm::vec3(0, 0, -20), glm::vec3(1));
+    Light* sun = new Light(config->lightPosition, config->lightColour, config->lightIntensity);
 
-    Terrain* terrain = new Terrain(0, 0, loader, colourGenerator);
-    terrainRenderer->addTerrain(terrain);
+
+    Terrain* terrain1 = new Terrain(0, 0, loader, colourGenerator, config);
+    terrainRenderer->addTerrain(terrain1);
 
     while (!windowManager->shouldClose()) {
         // prepare

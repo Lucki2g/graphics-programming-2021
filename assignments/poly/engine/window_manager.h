@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <config.h>
 #include "util/glmutils.h"
 #include "../entities/camera.h"
 
@@ -65,17 +66,15 @@ class WindowManager {
     private:
         GLFWwindow* window;
         int width, height;
-        const float FOV = 70.0f;
-        const float NEAR = 0.1f;
-        const float FAR = 1000.0f;
-        const float SPEED = 0.2f;
+        Config* config;
 
     /****************************
      *       CONSTRUCTOR        *
      ****************************/
-    public: WindowManager(int w, int h) {
-        width = w;
-        height = h;
+    public: WindowManager(Config* config) {
+        width = config->width;
+        height = config->height;
+        this->config = config;
         previous = glm::vec2(width / 2, height / 2);
     }
 
@@ -133,7 +132,7 @@ class WindowManager {
     }
 
     glm::mat4 getProjectionMatrix() {
-        return glm::perspectiveFov(FOV, (float) width, (float) height, NEAR, FAR);
+        return glm::perspectiveFov(config->fov, (float) width, (float) height, config->near, config->far);
     }
 
     glm::mat4 getViewMatrix() {
@@ -146,13 +145,13 @@ class WindowManager {
             glfwSetWindowShouldClose(window, true);
 
         if (glfwGetKey(window, GLFW_KEY_W) == press)
-            camera->move(SPEED * camera->getForward());
+            camera->move(config->speed * camera->getForward());
         if (glfwGetKey(window, GLFW_KEY_S) == press)
-            camera->move(-SPEED * camera->getForward());
+            camera->move(-config->speed * camera->getForward());
         if (glfwGetKey(window, GLFW_KEY_A) == press)
-            camera->move(-SPEED * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
+            camera->move(-config->speed * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
         if (glfwGetKey(window, GLFW_KEY_D) == press)
-            camera->move(SPEED * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
+            camera->move(config->speed * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
     }
 };
 

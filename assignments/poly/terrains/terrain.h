@@ -12,9 +12,7 @@
 
 class Terrain {
     private:
-        const float SIZE = 800;
-        const int VERTEX_COUNT = 128;
-
+        Config* config;
         float x, z;
         ColourGenerator* colourGenerator;
         Model* model;
@@ -57,26 +55,30 @@ class Terrain {
         }
 
         Model* proceduralTerrain(Loader* loader) {
-            HeightsGenerator* generator = new HeightsGenerator();
+            HeightsGenerator* generator = new HeightsGenerator(config);
 
             std::vector<float> positions;
             std::vector<float> normals;
             std::vector<float> colours;
             std::vector<unsigned int> indices;
 
-            for (int i = 0; i < VERTEX_COUNT; i++) {
-                for (int j = 0; j < VERTEX_COUNT; j++) {
+            for (int i = 0; i < config->vertex_count; i++) {
+                for (int j = 0; j < config->vertex_count; j++) {
                     float height = getHeight(j, i, generator);
-                    positions.push_back(-((float) j/((float) VERTEX_COUNT - 1)) * SIZE);
-                    positions.push_back(height);
-                    positions.push_back(-((float) i/((float) VERTEX_COUNT - 1)) * SIZE);
+                    glm::vec3 position = glm::vec3(
+                                    -((float) j/((float) config->vertex_count - 1)) * config->size,
+                                    height,
+                                    -((float) i/((float) config->vertex_count - 1)) * config->size);
+                    positions.push_back(position.x);
+                    positions.push_back(position.y);
+                    positions.push_back(position.z);
 
                     glm::vec3 normal = getNormal(j, i, generator);
                     normals.push_back(normal.x);
                     normals.push_back(normal.y);
                     normals.push_back(normal.z);
 
-                    glm::vec3 colour = glm::normalize(colourGenerator->getColour(height, generator->getAmplitude()));
+                    glm::vec3 colour = glm::normalize(colourGenerator->getColour(height, config->amplitude));
                     colours.push_back(colour.x);
                     colours.push_back(colour.y);
                     colours.push_back(colour.z);
@@ -84,11 +86,11 @@ class Terrain {
                 }
             }
 
-            for(int gz = 0; gz < VERTEX_COUNT - 1; gz++){
-                for(int gx = 0; gx < VERTEX_COUNT - 1; gx++){
-                    int topLeft = (gz * VERTEX_COUNT) + gx;
+            for(int gz = 0; gz < config->vertex_count - 1; gz++){
+                for(int gx = 0; gx < config->vertex_count - 1; gx++){
+                    int topLeft = (gz * config->vertex_count) + gx;
                     int topRight = topLeft + 1;
-                    int bottomLeft = ((gz + 1) * VERTEX_COUNT) + gx;
+                    int bottomLeft = ((gz + 1) * config->vertex_count) + gx;
                     int bottomRight = bottomLeft + 1;
                     indices.push_back(topLeft);
                     indices.push_back(bottomLeft);
@@ -107,22 +109,22 @@ class Terrain {
             std::vector<float> normals;
             std::vector<unsigned int> indices;
 
-            for (int i = 0; i < VERTEX_COUNT; i++) {
-                for (int j = 0; j < VERTEX_COUNT; j++) {
-                    positions.push_back(-((float) j/((float) VERTEX_COUNT - 1)) * SIZE);
+            for (int i = 0; i < config->vertex_count; i++) {
+                for (int j = 0; j < config->vertex_count; j++) {
+                    positions.push_back(-((float) j/((float) config->vertex_count - 1)) * config->size);
                     positions.push_back(0);
-                    positions.push_back(-((float) i/((float) VERTEX_COUNT - 1)) * SIZE);
+                    positions.push_back(-((float) i/((float) config->vertex_count - 1)) * config->size);
                     normals.push_back(0);
                     normals.push_back(1);
                     normals.push_back(0);
                 }
             }
 
-            for(int gz = 0; gz < VERTEX_COUNT - 1; gz++){
-                for(int gx = 0; gx < VERTEX_COUNT - 1; gx++){
-                    int topLeft = (gz * VERTEX_COUNT) + gx;
+            for(int gz = 0; gz < config->vertex_count - 1; gz++){
+                for(int gx = 0; gx < config->vertex_count - 1; gx++){
+                    int topLeft = (gz * config->vertex_count) + gx;
                     int topRight = topLeft + 1;
-                    int bottomLeft = ((gz + 1) * VERTEX_COUNT) + gx;
+                    int bottomLeft = ((gz + 1) * config->vertex_count) + gx;
                     int bottomRight = bottomLeft + 1;
                     indices.push_back(topLeft);
                     indices.push_back(bottomLeft);
@@ -137,9 +139,10 @@ class Terrain {
         }
 
     public:
-        Terrain(int gridX, int gridZ, Loader* loader, ColourGenerator* colourGenerator) {
-            this->x = gridX * SIZE;
-            this->z = gridZ * SIZE;
+        Terrain(int gridX, int gridZ, Loader* loader, ColourGenerator* colourGenerator, Config* config) {
+            this->config = config;
+            this->x = gridX * config->size;
+            this->z = gridZ * config->size;
             this->colourGenerator = colourGenerator;
             // this->model = generateTerrain(loader);
             // this->model = generateTerrain(loader);

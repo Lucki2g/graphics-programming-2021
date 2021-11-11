@@ -11,23 +11,18 @@
 class HeightsGenerator {
 
     private:
-        const float AMPLITUDE = 70.0f; // how high and low can terrain become
         int seed;
         PerlinNoise* noise;
 
     public:
-        HeightsGenerator() {
+        HeightsGenerator(Config* config) {
             this->seed = rand() % 1000000000;
-            this->noise = new PerlinNoise(seed, 3, AMPLITUDE, 0.35f);
+            this->noise = new PerlinNoise(seed, config);
         }
 
         float generateHeight(int x, int z) {
             float y = noise->getPerlinNoise(x, z);
             return y;
-        }
-
-        float getAmplitude() {
-            return AMPLITUDE;
         }
 };
 

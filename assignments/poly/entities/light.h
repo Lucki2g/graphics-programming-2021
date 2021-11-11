@@ -9,13 +9,21 @@
 
 class Light {
     private:
-        glm::vec3 position;
+    glm::vec3 position;
         glm::vec3 colour;
+        float intensity;
 
     public:
         Light(glm::vec3 pos, glm::vec3 col) {
             this->position = pos;
             this->colour = col;
+            this->intensity = 1.0f;
+        }
+
+        Light(glm::vec3 pos, glm::vec3 col, float intensity) {
+            this->position = pos;
+            this->colour = col;
+            this->intensity = intensity;
         }
 
         glm::vec3 getColour() {
@@ -24,6 +32,10 @@ class Light {
 
         glm::vec3 getPosition() {
             return position;
+        }
+
+        float getIntensity() {
+            return intensity;
         }
 };
 
