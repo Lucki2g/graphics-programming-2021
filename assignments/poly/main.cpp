@@ -39,9 +39,9 @@ int main () {
     terrainShader->loadDiffuseLighting(config->diffuseReflectance);
     terrainShader->Shader::stop();
 
-    //Model* model = objloader->loadObjModel("models/dragon.obj", loader);
-    //Entity* entity = new Entity(model, glm::vec3(0, 0, -2), glm::vec3(), 1);
-    //entityRenderer->addEntity(entity);
+    Model* model = objloader->loadObjModel("models/dragon.obj", loader);
+    Entity* entity = new Entity(model, glm::vec3(0, 0, -2), glm::vec3(), 1);
+    entityRenderer->addEntity(entity);
 
     Light* sun = new Light(config->lightPosition, config->lightColour, config->lightIntensity);
 

@@ -24,7 +24,6 @@ class EntityRenderer {
         }
 
         void loadEntity(Entity* entity, StaticShader* shader) {
-
             // update transformation matrix of the entity
             glm::mat4 position = glm::translate(entity->getPosition());
             glm::mat4 scale = glm::scale(glm::vec3(entity->getScale()));
@@ -40,7 +39,7 @@ class EntityRenderer {
         void unbind() {
             // clean
             glDisableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
+            glDisableVertexAttribArray(1);
             glBindVertexArray(0);
         }
 

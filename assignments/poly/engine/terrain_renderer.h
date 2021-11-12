@@ -27,8 +27,8 @@ class TerrainRenderer {
 
         void unbind() {
             glDisableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
+            glDisableVertexAttribArray(1);
+            glDisableVertexAttribArray(2);
             glBindVertexArray(0);
         }
 

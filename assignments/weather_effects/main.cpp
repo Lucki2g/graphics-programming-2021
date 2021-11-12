@@ -25,20 +25,16 @@ struct SceneObject{
 // structure to hold particles info
 // -----------------------------
 const float LINE_LENGTH = 0.05f;
-const unsigned int particleVertexBufferSize = 100; // # of particles
-std::vector<glm::vec3> gravityOffsets = { // TODO: 20 offsets were what the paper thought was good
-        glm::vec3 (0),
-        glm::vec3 (0),
+fetconst unsigned int particleVertexBufferSize = 100;// TODO increase (max)65536;    // # of particles
+std::vector<glm::vec3> gravityOffsets = { // TODO: 20 offsets were what the paper thought was good (ALSO implement windOffsets)
         glm::vec3 (0),
         glm::vec3 (0),
         glm::vec3 (0)
 },
 gravityDeltas = {
-        glm::vec3(0, -0.05f, 0),
-        glm::vec3(0, -0.08f, 0),
-        glm::vec3(0, -0.06f, 0),
-        glm::vec3(0, -0.10f, 0),
-        glm::vec3(0, -0.07f, 0)
+        glm::vec3(0, -0.02f, 0),
+        glm::vec3(0, -0.04f, 0),
+        glm::vec3(0, -0.01f, 0)
 },
 windOffsets = {
         glm::vec3 (0),
@@ -157,13 +153,11 @@ int main()
     glDepthFunc(GL_LESS); // draws fragments that are closer to the screen in NDC
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // Enable points to be drawn
 
-
     // render loop
     // -----------
     // render every loopInterval seconds
     float loopInterval = 0.02f;
     auto begin = std::chrono::high_resolution_clock::now();
-
     while (!glfwWindowShouldClose(window))
     {
         // update current time

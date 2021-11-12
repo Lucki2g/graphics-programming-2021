@@ -110,7 +110,12 @@ public:
         glUseProgram(0);
     }
     void bindAttribute(unsigned int attribute, const char* name){
+        std::cout << attribute << " " << name << std::endl;
         glBindAttribLocation(ID, attribute, name);
+        link();
+    }
+    void link() {
+        glLinkProgram(ID);
     }
     // utility uniform functions
     // ------------------------------------------------------------------------
