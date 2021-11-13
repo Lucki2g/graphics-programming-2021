@@ -32,8 +32,8 @@ struct Config {
     float speed = 2.0f;
 
     /** TERRAIN **/
-    float size = 200.0f;
-    int vertex_count = 64;
+    float size = 400.0f;
+    int vertex_count = 128;
     std::vector<glm::vec3> pallet = {
             glm::vec3(201, 178, 99),
             glm::vec3(135, 184, 82),
@@ -46,8 +46,12 @@ struct Config {
     float part = 1.0f / (pallet.size() - 1);
 
     float roughness = 0.35f;
-    float amplitude = 70.0f;
+    float amplitude = 40.0f;
     int octaves = 3;
+    float frequency = 0.05f;
+
+    int HEIGHTMAP = 0;
+    int PERLIN = 1;
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_CONFIG_H

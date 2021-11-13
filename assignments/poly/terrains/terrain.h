@@ -18,7 +18,12 @@ class Terrain {
         Model* model;
 
         float getHeight(int x, int z, HeightsGenerator* generator) {
-            return generator->generateHeight(x, z);
+            int max = config->vertex_count - 1;
+            if (x < 0) x = 0;
+            if (z < 0) z = 0;
+            if (x > max) x = max;
+            if (z > max) z = max;
+            return generator->generateHeight(x, z, config->PERLIN);
         }
 
         glm::vec3 getNormal(int x, int z, HeightsGenerator* generator) {

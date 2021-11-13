@@ -6,22 +6,36 @@
 #define ITU_GRAPHICS_PROGRAMMING_HEIGHTSGENERATOR_H
 
 #include <stdlib.h>
+#include <generation/height_map.h>
 #include "../generation/perlin_noise.h"
+#include "terrain.h"
 
 class HeightsGenerator {
 
     private:
         int seed;
         PerlinNoise* noise;
+        HeightMap* map;
 
     public:
         HeightsGenerator(Config* config) {
             this->seed = rand() % 1000000000;
             this->noise = new PerlinNoise(seed, config);
+            // this->map = new HeightMap("models/HH.png", config);
         }
 
-        float generateHeight(int x, int z) {
-            float y = noise->getPerlinNoise(x, z);
+        float generateHeight(int x, int z, int generator) {
+            float y;
+            switch (generator) {
+                case 0:
+                    y = map->getHeight(x, z);
+                    break;
+                case 1:
+                    y = noise->getPerlinNoise(x, z);
+                    break;
+                default:
+                    y = noise->getPerlinNoise(x, z);
+            }
             return y;
         }
 };

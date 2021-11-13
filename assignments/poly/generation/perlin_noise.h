@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <cstdlib>
+#include "FastNoiseLite.h"
 
 const float PI = 3.14157685;
 
@@ -14,6 +15,7 @@ class PerlinNoise {
 private:
     int seed;
     Config* config;
+    std::vector<float> noiseData = {};
 
     float interpolate(float a, float b, float blend) {
         double theta = blend * PI;
@@ -22,9 +24,10 @@ private:
     }
 
     float getNoise(int x, int y) {
-        srand(x * 49632 + y * 325176 + seed);
-        float noise = ((float)(rand()) / (float)RAND_MAX) * 2.0f - 1.0f;
-        return noise;
+        //srand(x * 49632 + y * 325176 + seed);
+        //float noise = ((float)(rand()) / (float)RAND_MAX) * 2.0f - 1.0f;
+        //return noise;
+        return noiseData[x + y];
     }
 
     float getSmoothNoise(int x, int y) {
@@ -57,6 +60,18 @@ public:
             this->seed = seed;
 
         this->config = config;
+
+        // Create and configure FastNoise object
+        FastNoiseLite* noise = new FastNoiseLite(seed);
+        noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+        noise->SetFrequency(config->frequency);
+
+        // Gather noise data
+        for (int y = 0; y < config->vertex_count; y++) {
+            for (int x = 0; x < config->vertex_count; x++) {
+                noiseData.push_back(noise->GetNoise((float)x, (float)y));
+            }
+        }
     }
 
     int getSeed() {
@@ -64,14 +79,16 @@ public:
     }
 
     float getPerlinNoise(int x, int z) {
-        float total = 0;
+        float noise = noiseData.at(x + config->vertex_count * z) * config->amplitude;
+        return noise;
+        /*float total = 0;
         float d = std::pow(2, config->octaves - 1);
         for (int i = 0; i < config->octaves; i++) {
             float freq = std::pow(2, i) / d;
             float amp = std::pow(config->roughness, i) * config->amplitude;
             total += getInterpolatedNoise(x * freq, z * freq) * amp;
         }
-        return total;
+        return total;*/
     }
 };
 
