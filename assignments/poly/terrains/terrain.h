@@ -16,6 +16,7 @@ class Terrain {
         float x, z;
         ColourGenerator* colourGenerator;
         Model* model;
+        bool indices = true;
 
         float getHeight(int x, int z, HeightsGenerator* generator) {
             int max = config->vertex_count - 1;
@@ -34,6 +35,34 @@ class Terrain {
             glm::vec3 normal = glm::vec3(HL - HR, 2.0f, HD - HU);
             glm::normalize(normal);
             return normal;
+        }
+
+        glm::vec3 getNormal(glm::vec3 v0, glm::vec3 v1, glm::vec3 v2) {
+            glm::vec3 tangentA = v1 - v0;
+            glm::vec3 tangentB = v2 - v0;
+            return glm::normalize(glm::cross(tangentA, tangentB));
+        }
+
+        void store(glm::vec3 pos, glm::vec3 normal, glm::vec3 colour,
+                   std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+            positions.push_back(pos.x);
+            positions.push_back(pos.y);
+            positions.push_back(pos.z);
+
+            normals.push_back(normal.x);
+            normals.push_back(normal.y);
+            normals.push_back(normal.z);
+
+            colours.push_back(colour.x);
+            colours.push_back(colour.y);
+            colours.push_back(colour.z);
+        }
+
+        void storeTriangle(std::vector<glm::vec3> corners, std::vector<glm::vec3> cols, glm::vec3 normal, int i0, int i1, int i2,
+                           std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+            store(corners.at(i0), normal, cols.at(i0), positions, normals, colours);
+            store(corners.at(i1), normal, cols.at(i1), positions, normals, colours);
+            store(corners.at(i2), normal, cols.at(i2), positions, normals, colours);
         }
 
         Model* quad(Loader* loader) {
@@ -109,49 +138,63 @@ class Terrain {
             return loader->loadToVao(positions, normals, colours, indices);
         }
 
-        Model* generateTerrain(Loader* loader) {
+        Model* generateDubVertexTerrain(Loader* loader) {
+            HeightsGenerator* generator = new HeightsGenerator(config);
+
             std::vector<float> positions;
             std::vector<float> normals;
-            std::vector<unsigned int> indices;
+            std::vector<float> colours;
 
             for (int i = 0; i < config->vertex_count; i++) {
                 for (int j = 0; j < config->vertex_count; j++) {
-                    positions.push_back(-((float) j/((float) config->vertex_count - 1)) * config->size);
-                    positions.push_back(0);
-                    positions.push_back(-((float) i/((float) config->vertex_count - 1)) * config->size);
-                    normals.push_back(0);
-                    normals.push_back(1);
-                    normals.push_back(0);
+
+                    std::vector<float> heights = {
+                            getHeight(j, i, generator),
+                            getHeight(j + 1, i, generator),
+                            getHeight(j, i + 1, generator),
+                            getHeight(j + 1, i + 1, generator),
+                    };
+
+                    std::vector<glm::vec3> corners = {
+                            glm::vec3(-((float) j/((float) config->vertex_count - 1)) * config->size, heights.at(0), -((float) i/((float) config->vertex_count - 1)) * config->size),
+                            glm::vec3(-((float) (j+1)/((float) config->vertex_count - 1)) * config->size, heights.at(1), -((float) i/((float) config->vertex_count - 1)) * config->size),
+                            glm::vec3(-((float) j/((float) config->vertex_count - 1)) * config->size, heights.at(2), -((float) (i+1)/((float) config->vertex_count - 1)) * config->size),
+                            glm::vec3(-((float) (j+1)/((float) config->vertex_count - 1)) * config->size, heights.at(3), -((float) (i+1)/((float) config->vertex_count - 1)) * config->size)
+                    };
+
+                    std::vector<glm::vec3> cols = {
+                            glm::normalize(colourGenerator->getColour(heights.at(0), config->amplitude)),
+                            glm::normalize(colourGenerator->getColour(heights.at(1), config->amplitude)),
+                            glm::normalize(colourGenerator->getColour(heights.at(2), config->amplitude)),
+                            glm::normalize(colourGenerator->getColour(heights.at(3), config->amplitude))
+                    };
+
+                    glm::vec3 TLNormal = getNormal(corners.at(0), corners.at(1), corners.at(2));
+                    glm::vec3 BRNormal = getNormal(corners.at(2), corners.at(1), corners.at(3));
+
+                    storeTriangle(corners, cols, TLNormal, 0, 1, 2, positions, normals, colours);
+                    storeTriangle(corners, cols, BRNormal, 2, 1, 3, positions, normals, colours);
                 }
             }
 
-            for(int gz = 0; gz < config->vertex_count - 1; gz++){
-                for(int gx = 0; gx < config->vertex_count - 1; gx++){
-                    int topLeft = (gz * config->vertex_count) + gx;
-                    int topRight = topLeft + 1;
-                    int bottomLeft = ((gz + 1) * config->vertex_count) + gx;
-                    int bottomRight = bottomLeft + 1;
-                    indices.push_back(topLeft);
-                    indices.push_back(bottomLeft);
-                    indices.push_back(topRight);
-                    indices.push_back(topRight);
-                    indices.push_back(bottomLeft);
-                    indices.push_back(bottomRight);
-                }
-            }
-
-            return loader->loadToVao(positions, normals, indices);
+            indices = false;
+            return loader->loadToVao(positions, normals, colours);
         }
 
     public:
-        Terrain(int gridX, int gridZ, Loader* loader, ColourGenerator* colourGenerator, Config* config) {
+        Terrain(int gridX, int gridZ, Loader* loader, ColourGenerator* colourGenerator, Config* config, int mode) {
             this->config = config;
             this->x = gridX * config->size;
             this->z = gridZ * config->size;
             this->colourGenerator = colourGenerator;
-            // this->model = generateTerrain(loader);
-            // this->model = generateTerrain(loader);
-            this->model = proceduralTerrain(loader);
+            switch (mode) {
+                case NORMAL:
+                    this->model = proceduralTerrain(loader);
+                    break;
+                case VERTEX_COPY:
+                    this->model = generateDubVertexTerrain(loader);
+                    break;
+            }
         }
 
         float getX() {
@@ -164,6 +207,10 @@ class Terrain {
 
         Model* getModel() {
             return model;
+        }
+
+        bool usesIndices() {
+            return indices;
         }
 };
 

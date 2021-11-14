@@ -19,7 +19,7 @@ void main(void) {
     vec4 worldPosition = transformationMatrix * vec4(in_position, 1.0);
     vec4 finalPos = projectionMatrix * viewMatrix * worldPosition;
 
-    surfaceNormal = (transformationMatrix * vec4(in_normal, 1.0f)).xyz;
+    surfaceNormal = (transformationMatrix * vec4(-in_normal, 1.0f)).xyz;
     toLightVector = lightPosition - worldPosition.xyz;
 
     out_colour = in_colour;

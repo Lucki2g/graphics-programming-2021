@@ -18,8 +18,19 @@
 
 Camera* camera = new Camera();
 glm::vec2 previous;
+bool drawGui = false;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+
+    if (action == GLFW_PRESS) {
+        switch (key) {
+            case GLFW_KEY_SPACE:
+                drawGui = !drawGui;
+                glfwSetInputMode(window, GLFW_CURSOR, drawGui ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+                break;
+        }
+    }
+
     /*if (action == GLFW_PRESS) {
         switch (key) {
             case GLFW_KEY_ESCAPE:
@@ -37,6 +48,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 
 void cursorCallback(GLFWwindow* window, double posX, double posY) {
+
+    if (drawGui)
+        return;
+
     float yaw = camera->getYaw();
     float pitch = camera->getPitch();
 
@@ -114,6 +129,16 @@ class WindowManager {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
+
+        // IMGUI init
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+        // Setup Platform/Renderer bindings
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 400 core");
+
         glfwShowWindow(window);
     }
 
@@ -129,6 +154,10 @@ class WindowManager {
 
     bool shouldClose() {
         return glfwWindowShouldClose(window);
+    }
+
+    bool shouldDrawGui() {
+        return drawGui;
     }
 
     glm::mat4 getProjectionMatrix() {

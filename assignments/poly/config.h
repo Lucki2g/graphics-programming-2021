@@ -7,23 +7,20 @@
 
 #include "util/glmutils.h"
 #include "vector"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
+const int NORMAL = 0;
+const int VERTEX_COPY = 1;
+const int GEOMETRY = 2;
+const int HYBRID = 3;
+const int MESH = 4;
 
 struct Config {
     /** WINDOW **/
     int width = 1080;
     int height = 720;
-
-    /** LIGHTING **/
-    // ambient light
-    glm::vec3 ambientLightColour = {1.0f, 1.0f, 1.0f};
-    float ambientLightIntensity = 0.2f;
-    // light 1
-    glm::vec3 lightColour = {1.0f, 1.0f, 1.0f};
-    glm::vec3 lightPosition = {0.0f, 100.0f, 0.0f};
-    float lightIntensity = 1.0f;
-    // material
-    float ambientReflectance = 0.5f;
-    float diffuseReflectance = 0.5f;
 
     /** CAMERA **/
     float fov = 70.0f;
@@ -33,7 +30,7 @@ struct Config {
 
     /** TERRAIN **/
     float size = 400.0f;
-    int vertex_count = 128;
+    int vertex_count = 64;
     std::vector<glm::vec3> pallet = {
             glm::vec3(201, 178, 99),
             glm::vec3(135, 184, 82),
@@ -49,9 +46,23 @@ struct Config {
     float amplitude = 40.0f;
     int octaves = 3;
     float frequency = 0.05f;
+    int generationSetting = NORMAL;
 
     int HEIGHTMAP = 0;
     int PERLIN = 1;
+
+    /** LIGHTING **/
+    // ambient light
+    glm::vec3 ambientLightColour = {1.0f, 1.0f, 1.0f};
+    float ambientLightIntensity = 0.2f;
+    // light 1
+    glm::vec3 lightColour = {1.0f, 1.0f, 1.0f};
+    glm::vec3 lightPosition = {size / 2, 200.0f, size / 2};
+    float lightIntensity = 1.0f;
+    // material
+    float ambientReflectance = 0.5f;
+    float diffuseReflectance = 0.5f;
+
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_CONFIG_H

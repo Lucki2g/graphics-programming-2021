@@ -8,12 +8,9 @@
 #include "shader_program.h"
 #include "../entities/light.h"
 
-const char* TERRAIN_VERTEX_FILE = "shaders/terrain.vert";
-const char* TERRAIN_FRAGMENT_FILE = "shaders/terrain.frag";
-
 class TerrainShader : public Shader {
     public:
-        TerrainShader() : Shader(TERRAIN_VERTEX_FILE, TERRAIN_FRAGMENT_FILE) {
+        TerrainShader(const char* vertex, const char* fragment) : Shader(vertex, fragment) {
             bindAttributes();
         }
 

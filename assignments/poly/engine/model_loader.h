@@ -36,6 +36,15 @@ class Loader {
             return new Model(vao, indices.size());
         }
 
+        Model* loadToVao(const std::vector<float> &positions, const std::vector<float> normals, const std::vector<float> colours) {
+            int vao = createVao();
+            storeDataInAttributeList(0, positions);
+            storeDataInAttributeList(1, normals);
+            storeDataInAttributeList(2, colours);
+            unbindVao();
+            return new Model(vao, positions.size());
+        }
+
         void clean() {
             glDeleteVertexArrays(vaos.size(), vaos.data());
             glDeleteBuffers(vbos.size(), vbos.data());

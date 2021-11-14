@@ -10,12 +10,13 @@
 #include <vector>
 #include <terrains/terrain.h>
 #include <shaders/terrain_shader.h>
+#include <map>
 #include "model.h"
 
 class TerrainRenderer {
 
     private:
-        std::vector<Terrain*> terrains;
+        std::map<int, std::vector<Terrain*>> terrains;
 
         void bind(Terrain* terrain) {
             Model* model = terrain->getModel();
@@ -35,25 +36,30 @@ class TerrainRenderer {
         void loadTerrain(Terrain* terrain, TerrainShader* shader) {
             glm::mat4 position = glm::translate(glm::vec3(terrain->getX(), 0, terrain->getZ()));
             shader->loadTransformationMatrix(position);
-            glDrawElements(GL_TRIANGLES, terrain->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
+            std::cout << terrain->getModel()->getVertexCount() << std::endl;
+            if (terrain->usesIndices())
+                glDrawElements(GL_TRIANGLES, terrain->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
+            else
+                glDrawArrays(GL_TRIANGLES, 0, terrain->getModel()->getVertexCount());
         }
 
     public:
         void prepare() {
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
-        void render(TerrainShader* shader) {
-            for (Terrain* terrain : terrains) {
+        void render(TerrainShader* shader, int mode) {
+            if (mode == MESH) mode = NORMAL;
+            for (Terrain* terrain : terrains[mode]) {
                 bind(terrain);
                 loadTerrain(terrain, shader);
                 unbind();
             }
         }
 
-        void addTerrain(Terrain* terrain) {
-            terrains.push_back(terrain);
+        void addTerrain(Terrain* terrain, int type) {
+            terrains[type].push_back(terrain);
         }
 };
 
