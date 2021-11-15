@@ -15,6 +15,7 @@
 #include "shaders/normal/normal_terrain_shader.h"
 #include <map>
 #include <shaders/vertexcopy/copy_terrain_shader.h>
+#include <shaders/geometry/geomoetry_terrain_shader.h>
 
 void print(std::string s);
 
@@ -26,7 +27,6 @@ int main () {
     ObjReader* objloader = new ObjReader();
     EntityRenderer* entityRenderer = new EntityRenderer();
     TerrainRenderer* terrainRenderer = new TerrainRenderer();
-    Gui* gui = new Gui(config);
     ColourGenerator* colourGenerator = new ColourGenerator(config);
 
     /******************* WINDOW *****************/
@@ -41,16 +41,17 @@ int main () {
     NormalTerrainShader* normalShader = new NormalTerrainShader();
     normalShader->Shader::start();
     normalShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
-    normalShader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
-    normalShader->loadDiffuseLighting(config->diffuseReflectance);
     normalShader->Shader::stop();
 
     CopyTerrainShader* copyShader = new CopyTerrainShader();
     copyShader->Shader::start();
     copyShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
-    copyShader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
-    copyShader->loadDiffuseLighting(config->diffuseReflectance);
     copyShader->Shader::stop();
+
+    GeometryTerrainShader* geoShader = new GeometryTerrainShader();
+    geoShader->Shader::start();
+    geoShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
+    geoShader->Shader::stop();
 
     /******************* MODELS & TERRAIN *****************/
     /*Model* model = objloader->loadObjModel("models/dragon.obj", loader);
@@ -58,7 +59,7 @@ int main () {
     entityRenderer->addEntity(entity);*/
 
     Model* cubeModel = loader->loadToVao(cubeVertices, cubeColors, cubeNormals, cubeIndices);
-    Entity* cubeEntity = new Entity(cubeModel, config->lightPosition, glm::vec3(), 1);
+    Entity* cubeEntity = new Entity(cubeModel, config->lightPosition + glm::vec3(0, 40, 0), glm::vec3(), 1);
     entityRenderer->addEntity(cubeEntity);
 
     Light* sun = new Light(config->lightPosition, config->lightColour, config->lightIntensity);
@@ -68,6 +69,12 @@ int main () {
 
     Terrain* terrain2 = new Terrain(0, 0, loader, colourGenerator, config, VERTEX_COPY);
     terrainRenderer->addTerrain(terrain2, VERTEX_COPY);
+
+    Terrain* terrain3 = new Terrain(0, 0, loader, colourGenerator, config, GEOMETRY);
+    terrainRenderer->addTerrain(terrain3, GEOMETRY);
+
+    Gui* gui = new Gui(config, sun);
+
 
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
@@ -82,12 +89,15 @@ int main () {
         staticShader->loadViewMatrix(windowManager->getViewMatrix());
         entityRenderer->render(staticShader);
         staticShader->Shader::stop();
+
         // terrain
         switch (config->generationSetting) {
             case NORMAL: case MESH:
                 normalShader->TerrainShader::Shader::start();
                 normalShader->TerrainShader::loadLight(sun);
                 normalShader->TerrainShader::loadViewMatrix(windowManager->getViewMatrix());
+                normalShader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
+                normalShader->loadDiffuseLighting(config->diffuseReflectance);
                 terrainRenderer->render(normalShader, config->generationSetting);
                 normalShader->TerrainShader::Shader::stop();
                 break;
@@ -95,8 +105,19 @@ int main () {
                 copyShader->Shader::start();
                 copyShader->loadLight(sun);
                 copyShader->loadViewMatrix(windowManager->getViewMatrix());
+                copyShader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
+                copyShader->loadDiffuseLighting(config->diffuseReflectance);
                 terrainRenderer->render(copyShader, config->generationSetting);
                 copyShader->Shader::stop();
+                break;
+            case GEOMETRY:
+                geoShader->Shader::start();
+                geoShader->loadLight(sun);
+                geoShader->loadViewMatrix(windowManager->getViewMatrix());
+                geoShader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
+                geoShader->loadDiffuseLighting(config->diffuseReflectance);
+                terrainRenderer->render(geoShader, config->generationSetting);
+                geoShader->Shader::stop();
                 break;
         }
 
@@ -113,6 +134,7 @@ int main () {
     loader->clean();
     windowManager->closeWindow();
 }
+
 
 void print(std::string s) {
     std::cout << s << std::endl;

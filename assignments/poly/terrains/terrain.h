@@ -181,6 +181,49 @@ class Terrain {
             return loader->loadToVao(positions, normals, colours);
         }
 
+        Model* generateGeoTerrain(Loader* loader) {
+            HeightsGenerator* generator = new HeightsGenerator(config);
+
+            std::vector<float> positions;
+            std::vector<float> colours;
+            std::vector<unsigned int> indices;
+
+            for (int i = 0; i < config->vertex_count; i++) {
+                for (int j = 0; j < config->vertex_count; j++) {
+                    float height = getHeight(j, i, generator);
+                    glm::vec3 position = glm::vec3(
+                            -((float) j/((float) config->vertex_count - 1)) * config->size,
+                            height,
+                            -((float) i/((float) config->vertex_count - 1)) * config->size);
+                    positions.push_back(position.x);
+                    positions.push_back(position.y);
+                    positions.push_back(position.z);
+
+                    glm::vec3 colour = glm::normalize(colourGenerator->getColour(height, config->amplitude));
+                    colours.push_back(colour.x);
+                    colours.push_back(colour.y);
+                    colours.push_back(colour.z);
+                }
+            }
+
+            for(int gz = 0; gz < config->vertex_count - 1; gz++){
+                for(int gx = 0; gx < config->vertex_count - 1; gx++){
+                    int topLeft = (gz * config->vertex_count) + gx;
+                    int topRight = topLeft + 1;
+                    int bottomLeft = ((gz + 1) * config->vertex_count) + gx;
+                    int bottomRight = bottomLeft + 1;
+                    indices.push_back(topLeft);
+                    indices.push_back(bottomLeft);
+                    indices.push_back(topRight);
+                    indices.push_back(topRight);
+                    indices.push_back(bottomLeft);
+                    indices.push_back(bottomRight);
+                }
+            }
+
+            return loader->loadToVaoNoNormals(positions, colours, indices);
+        }
+
     public:
         Terrain(int gridX, int gridZ, Loader* loader, ColourGenerator* colourGenerator, Config* config, int mode) {
             this->config = config;
@@ -193,6 +236,9 @@ class Terrain {
                     break;
                 case VERTEX_COPY:
                     this->model = generateDubVertexTerrain(loader);
+                    break;
+                case GEOMETRY:
+                    this->model = generateGeoTerrain(loader);
                     break;
             }
         }

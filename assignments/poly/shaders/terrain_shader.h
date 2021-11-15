@@ -13,6 +13,10 @@ class TerrainShader : public Shader {
         TerrainShader(const char* vertex, const char* fragment) : Shader(vertex, fragment) {
             bindAttributes();
         }
+        TerrainShader(const char* vertex, const char* fragment, const char* geometry) : Shader(vertex, fragment, geometry) {
+            Shader::bindAttribute(0, "in_position");
+            Shader::bindAttribute(2, "in_colour");
+        }
 
         void bindAttributes() {
             Shader::bindAttribute(0, "in_position");

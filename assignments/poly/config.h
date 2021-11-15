@@ -29,7 +29,7 @@ struct Config {
     float speed = 2.0f;
 
     /** TERRAIN **/
-    float size = 400.0f;
+    float size = 1000.0f;
     int vertex_count = 64;
     std::vector<glm::vec3> pallet = {
             glm::vec3(201, 178, 99),
@@ -43,9 +43,9 @@ struct Config {
     float part = 1.0f / (pallet.size() - 1);
 
     float roughness = 0.35f;
-    float amplitude = 40.0f;
+    float amplitude = 70.0f;
     int octaves = 3;
-    float frequency = 0.05f;
+    float frequency = 0.1f;
     int generationSetting = NORMAL;
 
     int HEIGHTMAP = 0;
@@ -57,7 +57,7 @@ struct Config {
     float ambientLightIntensity = 0.2f;
     // light 1
     glm::vec3 lightColour = {1.0f, 1.0f, 1.0f};
-    glm::vec3 lightPosition = {size / 2, 200.0f, size / 2};
+    glm::vec3 lightPosition = {-size / 2, 300.0f, -size / 2};
     float lightIntensity = 1.0f;
     // material
     float ambientReflectance = 0.5f;
