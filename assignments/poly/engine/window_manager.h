@@ -16,7 +16,7 @@
  *          EVENTS          *
  ****************************/
 
-Camera* camera = new Camera();
+Camera* camera;
 glm::vec2 previous;
 bool drawGui = false;
 
@@ -89,6 +89,7 @@ class WindowManager {
     public: WindowManager(Config* config) {
         width = config->width;
         height = config->height;
+        camera = new Camera(config->start_position);
         this->config = config;
         previous = glm::vec2(width / 2, height / 2);
     }

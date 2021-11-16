@@ -9,11 +9,15 @@
 
 class Camera {
     private:
-        glm::vec3 position = glm::vec3(0);
-        glm::vec3 forward = glm::vec3(0,0,-1);
+        glm::vec3 position;
+        glm::vec3 forward = glm::vec3(0,0.5f,-1.0f);
         float pitch, yaw = -90.0f;
 
     public:
+        Camera(glm::vec3 start) {
+            this->position = start;
+        }
+
         glm::vec3 getPosition() {
             return position;
         }

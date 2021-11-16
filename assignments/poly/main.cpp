@@ -17,6 +17,7 @@
 #include <shaders/vertexcopy/copy_terrain_shader.h>
 #include <shaders/geometry/geomoetry_terrain_shader.h>
 #include <shaders/flat/flat_terrain_shader.h>
+#include <engine/water_renderer.h>
 
 void print(std::string s);
 
@@ -28,6 +29,7 @@ int main () {
     ObjReader* objloader = new ObjReader();
     EntityRenderer* entityRenderer = new EntityRenderer();
     TerrainRenderer* terrainRenderer = new TerrainRenderer();
+    WaterRenderer* waterRenderer = new WaterRenderer();
     ColourGenerator* colourGenerator = new ColourGenerator(config);
 
     /******************* WINDOW *****************/
@@ -59,6 +61,11 @@ int main () {
     flatShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
     flatShader->Shader::stop();
 
+    WaterShader* waterShader = new WaterShader();
+    waterShader->start();
+    waterShader->loadProjectionMatrix(windowManager->getProjectionMatrix());
+    waterShader->stop();
+
     /******************* MODELS & TERRAIN *****************/
     /*Model* model = objloader->loadObjModel("models/dragon.obj", loader);
     Entity* entity = new Entity(model, glm::vec3(0, 0, -2), glm::vec3(), 1);
@@ -82,7 +89,12 @@ int main () {
     Terrain* terrain3 = new Terrain(0, 0, loader, colourGenerator, config, GEOMETRY);
     terrainRenderer->addTerrain(terrain3, GEOMETRY);
 
+    Model* waterModel = loader->loadToVao(quadVertices, quadIndices);
+    Entity* waterEntity = new Entity(waterModel, glm::vec3(), glm::vec3(), 1);
+    waterRenderer->setWater(waterEntity);
+
     Gui* gui = new Gui(config, sun, cubeEntity);
+
 
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
@@ -138,6 +150,12 @@ int main () {
                 geoShader->Shader::stop();
                 break;
         }
+
+        // water
+        waterShader->start();
+        waterShader->loadViewMatrix(windowManager->getViewMatrix());
+        waterRenderer->render(waterShader);
+        waterShader->stop();
 
         // gui
         if (windowManager->shouldDrawGui())

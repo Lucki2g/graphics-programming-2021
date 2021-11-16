@@ -28,6 +28,7 @@ struct Config {
     float near = 0.1f;
     float far = 1000.0f;
     float speed = 2.0f;
+    glm::vec3 start_position = glm::vec3(0, 50, 0);
 
     /** TERRAIN **/
     int terrain_size = 100;
