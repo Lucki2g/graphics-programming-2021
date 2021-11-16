@@ -67,6 +67,12 @@ struct Config {
     float ambientReflectance = 0.5f;
     float diffuseReflectance = 1.0f;
 
+    /** WATER **/
+    const int reflection_width = 320;
+    const int reflection_height = 180;
+    const int refraction_width = 1280;
+    const int refraction_height = 720;
+
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_CONFIG_H

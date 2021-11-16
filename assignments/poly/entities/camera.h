@@ -49,6 +49,10 @@ class Camera {
         void move(glm::vec3 movement) {
             position += movement;
         }
+
+        void invertPitch() {
+            this->pitch = -pitch;
+        }
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_CAMERA_H

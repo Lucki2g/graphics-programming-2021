@@ -2,14 +2,14 @@
 // Created by Lucki on 14-11-2021.
 //
 
-#ifndef ITU_GRAPHICS_PROGRAMMING_GUI_H
-#define ITU_GRAPHICS_PROGRAMMING_GUI_H
+#ifndef ITU_GRAPHICS_PROGRAMMING_IM_GUI_H
+#define ITU_GRAPHICS_PROGRAMMING_IM_GUI_H
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <entities/light.h>
 #include <entities/entity.h>
-#include "../config.h"
+#include "config.h"
 
 class Gui {
     private:
@@ -81,4 +81,4 @@ class Gui {
         }
 };
 
-#endif //ITU_GRAPHICS_PROGRAMMING_GUI_H
+#endif //ITU_GRAPHICS_PROGRAMMING_IM_GUI_H

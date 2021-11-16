@@ -15,8 +15,16 @@ class Loader {
     private:
         std::vector<GLuint> vaos;
         std::vector<GLuint> vbos;
+        std::vector<GLuint> textures;
 
     public:
+        Model* loadToVao(const std::vector<float> &positions) {
+            int vao = createVao();
+            storeDataInAttributeList(0, 2, positions);
+            unbindVao();
+            return new Model(vao, positions.size() / 2);
+        }
+
         Model* loadToVao(const std::vector<float> &positions, const std::vector<unsigned int> indices) {
             int vao = createVao();
             bindIndicesBuffer(indices);

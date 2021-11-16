@@ -28,6 +28,11 @@ class WaterShader : public Shader {
             Shader::setMat4("viewMatrix", matrix);
         }
 
+        void loadTextures() {
+            Shader::setInt("reflectionTexture", 0);
+            Shader::setInt("refractionTexture", 1);
+        }
+
     private:
         void bindAttributes() {
             Shader::bindAttribute(0, "in_position");

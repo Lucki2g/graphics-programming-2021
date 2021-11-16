@@ -53,6 +53,10 @@ class TerrainShader : public Shader {
         void loadDiffuseLighting(float reflectance) {
             Shader::setFloat("diffuseReflectance", reflectance);
         }
+
+        void loadWaterClippingPlane(glm::vec4 plane) {
+            Shader::setVec4("waterClippingPlane", plane);
+        }
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_STATIC_SHADER_H
