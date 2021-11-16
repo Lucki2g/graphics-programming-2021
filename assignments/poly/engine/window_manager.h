@@ -139,6 +139,9 @@ class WindowManager {
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 400 core");
 
+        // set provoking vertex
+        glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+
         glfwShowWindow(window);
     }
 

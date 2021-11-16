@@ -15,7 +15,7 @@ class PerlinNoise {
 private:
     int seed;
     Config* config;
-    std::vector<float> noiseData = {};
+    std::vector<std::vector<float>> noiseData = {};
 
 public:
     PerlinNoise(int seed, Config* config) {
@@ -26,21 +26,24 @@ public:
 
         this->config = config;
 
+        for (int i = 0; i < config->terrain_size + 1; i++)
+            noiseData.push_back({});
+
         // Create and configure FastNoise object
-        FastNoiseLite* noise = new FastNoiseLite(seed);
+        FastNoiseLite* noise = new FastNoiseLite(1337);
         noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
         noise->SetFrequency(config->frequency);
 
         // Gather noise data
-        for (int y = 0; y < config->vertex_count; y++) {
-            for (int x = 0; x < config->vertex_count; x++) {
-                noiseData.push_back(noise->GetNoise((float)x, (float)y));
+        for (int z = 0; z < config->terrain_size + 1; z++) {
+            for (int x = 0; x < config->terrain_size + 1; x++) {
+                noiseData.at(x).push_back(noise->GetNoise((float)x, (float)z));
             }
         }
     }
 
     float getPerlinNoise(int x, int z) {
-        float noise = noiseData.at(x + config->vertex_count * z) * config->amplitude;
+        float noise = noiseData.at(x).at(z) * config->amplitude;
         return noise;
     }
 

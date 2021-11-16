@@ -24,8 +24,8 @@ vec3 getLight(vec3 N, int i) {
     vec3 ambient = ambientLightColour * ambientReflectance;
 
     // diffuse
-    float diff = max(dot(-L, N), 0.0);
-    vec3 diffuse = diff * lightColour;
+    float diff = max(dot(L, N), 0.0);
+    vec3 diffuse = diff * diffuseReflectance * lightColour;
 
     return (ambient + diffuse);
 }

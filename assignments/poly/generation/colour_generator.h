@@ -29,8 +29,7 @@ class ColourGenerator {
             float blend = (v - (fst * config->part)) / config->part;
             glm::vec3 c1 = config->pallet[fst];
             glm::vec3 c2 = config->pallet[fst + 1];
-            return c1;
-            //return glm::mix(c1, c2, blend);
+            return glm::mix(c1, c2, blend);
         }
 };
 

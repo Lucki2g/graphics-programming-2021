@@ -8,16 +8,19 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <entities/light.h>
+#include <entities/entity.h>
 #include "../config.h"
 
 class Gui {
     private:
         Config* config;
         Light* sun;
+        Entity* entity;
     public:
-        Gui(Config* config, Light* sun) {
+        Gui(Config* config, Light* sun, Entity* entity) {
             this->config = config;
             this->sun = sun;
+            this->entity = entity;
         }
 
         void drawGui() {
@@ -30,24 +33,34 @@ class Gui {
                 if(ImGui::RadioButton("NORMAL", config->generationSetting == NORMAL)) {
                     config->generationSetting = NORMAL;
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                } ImGui::SameLine();
+                }
                 if(ImGui::RadioButton("VERTEX_COPY", config->generationSetting == VERTEX_COPY)) {
                     config->generationSetting = VERTEX_COPY;
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                } ImGui::SameLine();
+                }
                 if(ImGui::RadioButton("GEOMETRY", config->generationSetting == GEOMETRY)) {
                     config->generationSetting = GEOMETRY;
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                } ImGui::SameLine();
+                }
+                if(ImGui::RadioButton("FLAT", config->generationSetting == FLAT))  {
+                    config->generationSetting = FLAT;
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+                if(ImGui::RadioButton("HYBRID", config->generationSetting == HYBRID))  {
+                    config->generationSetting = HYBRID;
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
                 if(ImGui::RadioButton("MESH", config->generationSetting == MESH))  {
                     config->generationSetting = MESH;
                     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                } ImGui::SameLine();
+                }
                 ImGui::Separator();
                 ImGui::Text("Lighting");
                 ImGui::ColorEdit3("light color", (float*)&sun->colour);
                 ImGui::SliderFloat("light intensity", (float*)&sun->intensity, 0.0f, 1.0f);
-                ImGui::DragFloat3("light position", (float*)&sun->position, config->size / 100.0f, -config->size, config->size);
+                ImGui::DragFloat3("light position", (float*)&sun->position, config->terrain_size / 100.0f, 0.0f, config->terrain_size * 3);
+                ImGui::DragFloat3("light position", (float*)&entity->position, config->terrain_size / 100.0f, 0.0f, config->terrain_size * 3);
+                ImGui::DragFloat3("light direction", (float*)&config->lightDirection, 0.01f, -1.0f, 1.0f);
                 ImGui::SliderFloat("ambient reflectance", &config->ambientReflectance, 0.0f, 1.0f);
                 ImGui::SliderFloat("diffuse reflectance", &config->diffuseReflectance, 0.0f, 1.0f);
                 ImGui::Separator();

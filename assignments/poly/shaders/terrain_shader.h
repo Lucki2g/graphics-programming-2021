@@ -36,6 +36,10 @@ class TerrainShader : public Shader {
             Shader::setMat4("viewMatrix", matrix);
         }
 
+        void loadLightDirection(glm::vec3 direction) {
+            Shader::setVec3("lightDirection", direction);
+        }
+
         void loadLight(Light* light) {
             Shader::setVec3("lightPosition", light->getPosition());
             Shader::setVec3("lightColour", light->getColour() * light->getIntensity());

@@ -5,6 +5,7 @@ in vec3 out_colour;
 in vec3 N;
 in vec3 L;
 
+uniform vec3 lightDirection;
 uniform vec3 lightColour;
 uniform vec3 ambientLightColour;
 uniform float ambientReflectance;
@@ -15,8 +16,8 @@ vec3 getLight() {
     vec3 ambient = ambientLightColour * ambientReflectance;
 
     // diffuse
-    float diff = max(dot(-L, N), 0.0);
-    vec3 diffuse = diff * lightColour;
+    float diff = max(dot(L, N), 0.0);
+    vec3 diffuse = diff * diffuseReflectance * lightColour;
 
     return (ambient + diffuse) * out_colour;
 }

@@ -50,7 +50,6 @@ class TerrainRenderer {
         }
 
         void render(TerrainShader* shader, int mode) {
-            if (mode == MESH) mode = NORMAL;
             for (Terrain* terrain : terrains[mode]) {
                 bind(terrain);
                 loadTerrain(terrain, shader);

@@ -1,7 +1,7 @@
 #version 400 core
 out vec4 FragColor;
 
-in vec3 out_colour;
+flat in vec3 out_colour;
 in vec3 N;
 in vec3 L;
 
