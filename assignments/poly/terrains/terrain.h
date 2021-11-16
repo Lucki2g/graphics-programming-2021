@@ -181,48 +181,36 @@ class Terrain {
             return loader->loadToVao(out_positions, out_normals, out_colours);
         }
 
-        /*Model* generateGeoTerrain(Loader* loader) {
+        Model* generateGeoTerrain(Loader* loader) {
             HeightsGenerator* generator = new HeightsGenerator(config);
 
-            std::vector<float> positions;
-            std::vector<float> colours;
-            std::vector<unsigned int> indices;
+            float** heights = generateHeights(generator);
+            glm::vec3** colours = generateColours(heights);
 
-            for (int i = 0; i < config->vertex_count; i++) {
-                for (int j = 0; j < config->vertex_count; j++) {
-                    float height = getHeight(j, i, generator);
-                    glm::vec3 position = glm::vec3(
-                            x,
-                            height,
-                            z);
-                    positions.push_back(position.x);
-                    positions.push_back(position.y);
-                    positions.push_back(position.z);
+            std::vector<float> out_positions;
+            std::vector<float> out_colours;
+            std::vector<unsigned int> out_indices;
 
-                    glm::vec3 colour = glm::normalize(colourGenerator->getColour(height, config->amplitude));
-                    colours.push_back(colour.x);
-                    colours.push_back(colour.y);
-                    colours.push_back(colour.z);
+            for (int z = 0; z < config->terrain_size; z++) {
+                for (int x = 0; x < config->terrain_size; x++) {
+
+                    float height = heights[z][x];
+                    glm::vec3 position = glm::vec3(z, height, x);
+                    out_positions.push_back(position.x);
+                    out_positions.push_back(position.y);
+                    out_positions.push_back(position.z);
+
+                    glm::vec3 colour = glm::normalize(colours[z][x]);
+                    out_colours.push_back(colour.x);
+                    out_colours.push_back(colour.y);
+                    out_colours.push_back(colour.z);
                 }
             }
 
-            for(int gz = 0; gz < config->vertex_count - 1; gz++){
-                for(int gx = 0; gx < config->vertex_count - 1; gx++){
-                    int topLeft = (gz * config->vertex_count) + gx;
-                    int topRight = topLeft + 1;
-                    int bottomLeft = ((gz + 1) * config->vertex_count) + gx;
-                    int bottomRight = bottomLeft + 1;
-                    indices.push_back(topLeft);
-                    indices.push_back(bottomLeft);
-                    indices.push_back(topRight);
-                    indices.push_back(topRight);
-                    indices.push_back(bottomLeft);
-                    indices.push_back(bottomRight);
-                }
-            }
+            generateIndices(out_indices);
 
-            return loader->loadToVaoNoNormals(positions, colours, indices);
-        }*/
+            return loader->loadToVaoNoNormals(out_positions, out_colours, out_indices);
+        }
         /************** INDICES ***************/
         void generateIndices(std::vector<unsigned int> &indices) {
             int size = config->terrain_size;
@@ -328,7 +316,7 @@ class Terrain {
                     this->model = generateDubVertexTerrain(loader);
                     break;
                 case GEOMETRY:
-                    //this->model = generateGeoTerrain(loader);
+                    this->model = generateGeoTerrain(loader);
                     break;
             }
         }

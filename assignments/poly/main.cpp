@@ -68,7 +68,6 @@ int main () {
     Entity* cubeEntity = new Entity(cubeModel, config->lightPosition, glm::vec3(), 1);
     entityRenderer->addEntity(cubeEntity);
 
-
     // std::cout << config->lightPosition.x << "," << config->lightPosition.y << "," << config->lightPosition.z << std::endl;
     Light* sun = new Light(config->lightPosition, config->lightColour, config->lightIntensity);
 

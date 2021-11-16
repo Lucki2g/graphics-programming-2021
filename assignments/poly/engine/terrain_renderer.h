@@ -36,7 +36,7 @@ class TerrainRenderer {
         void loadTerrain(Terrain* terrain, TerrainShader* shader) {
             glm::mat4 position = glm::translate(glm::vec3(terrain->getX(), 0, terrain->getZ()));
             shader->loadTransformationMatrix(position);
-            std::cout << terrain->getModel()->getVertexCount() << std::endl;
+            // std::cout << terrain->getModel()->getVertexCount() << std::endl;
             if (terrain->usesIndices())
                 glDrawElements(GL_TRIANGLES, terrain->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
             else
