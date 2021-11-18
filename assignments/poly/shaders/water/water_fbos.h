@@ -22,64 +22,66 @@ class WaterFBOs {
 
         void initReflection() {
             reflectionFrameBuffer = createFrameBuffer();
-            reflectionTexture = createTextureBufferA(config->reflection_width, config->reflection_height);
-            reflectionDepthBuffer = createDepthBuffer(config->reflection_width, config->reflection_height);
+            reflectionTexture = createColourAttachment(config->reflection_width, config->reflection_height);
+            reflectionDepthBuffer = createDepthAttachment(config->reflection_width, config->reflection_height);
+            if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+                std::cout << "generated reflection: " << reflectionFrameBuffer << std::endl;
             unbindFrameBuffer();
         }
 
         void initRefraction() {
             refractionFrameBuffer = createFrameBuffer();
-            refractionTexture = createTextureBufferA(config->refraction_width, config->refraction_height);
-            refractionDepthTexture = createDepthBufferA(config->refraction_width, config->refraction_height);
+            refractionTexture = createColourAttachment(config->refraction_width, config->refraction_height);
+            refractionDepthTexture = createRenderBuffer(config->refraction_width, config->refraction_height);
+            if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+                std::cout << "generated refraction: " << refractionFrameBuffer << std::endl;
             unbindFrameBuffer();
         }
 
         void bindFrameBuffer(int id, int w, int h) {
-            glBindTexture(GL_TEXTURE_2D, 0); // make sure texture is not bound
             glBindFramebuffer(GL_FRAMEBUFFER, id); // bind framebuffer
             glViewport(0, 0, w, h); // set resolution
         }
 
-        int createFrameBuffer() {
+        unsigned int createFrameBuffer() {
             unsigned int frameBuffer;
             glGenFramebuffers(1, &frameBuffer);
             glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-            glDrawBuffer(GL_COLOR_ATTACHMENT0); // what color buffer do we render to?
+            // glDrawBuffer(GL_COLOR_ATTACHMENT0); // what color buffer do we render to?
             return frameBuffer;
         }
 
         /** BUFFER ATTACHMENTS **/
-        int createTextureBufferA(int w, int h) {
+        unsigned int createColourAttachment(int w, int h) {
             unsigned int texture;
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0); // add texture to currently bound fbo
-            std::cout << "texture ID: " << texture << std::endl;
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0); // add texture to currently bound fbo
             return texture;
         }
 
-        int createDepthBufferA(int w, int h) {
+        unsigned int createDepthAttachment(int w, int h) {
             unsigned int texture;
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); // 32 bit depth texture
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture, 0); // add texture to currently bound fbo
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0); // add texture to currently bound fbo
             return texture;
         }
 
         /** RENDER BUFFERS **/
-        int createDepthBuffer(int w, int h) {
-            unsigned int buffer;
-            glGenRenderbuffers(1, &buffer);
-            glBindRenderbuffer(GL_RENDERBUFFER, buffer);
+        unsigned int createRenderBuffer(int w, int h) {
+            unsigned int rbo;
+            glGenRenderbuffers(1, &rbo);
+            glBindRenderbuffer(GL_RENDERBUFFER, rbo);
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, buffer);
-            return buffer;
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+            return rbo;
         }
 
     public:
@@ -102,15 +104,15 @@ class WaterFBOs {
             bindFrameBuffer(refractionFrameBuffer, config->refraction_width, config->refraction_height);
         }
 
-        int getReflectionTex() {
+        unsigned int getReflectionTex() {
             return reflectionTexture;
         }
 
-        int getRefractionTex() {
+        unsigned int getRefractionTex() {
             return refractionTexture;
         }
 
-        int getRefractionDepth() {
+        unsigned int getRefractionDepth() {
             return refractionDepthTexture;
         }
 

@@ -12,6 +12,7 @@ class WaterRenderer {
     private:
         Entity* water;
         WaterFBOs* fbos;
+        WaterShader* shader;
 
         void bind() {
             Model* model = water->getModel();
@@ -29,17 +30,28 @@ class WaterRenderer {
         }
 
         void loadWater(WaterShader* shader) {
-            glm::mat4 position = glm::translate(glm::vec3(water->getPosition().x, 0, water->getPosition().z));
+            glm::mat4 position = glm::translate(glm::vec3(water->getPosition()));
             glm::mat4 scale = glm::scale(glm::vec3(water->getScale()));
             shader->loadTransformationMatrix(position * scale);
             glDrawElements(GL_TRIANGLES, water->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
         }
 
     public:
-        void render(WaterShader* shader) {
+        WaterRenderer(glm::mat4 projectionMatrix) {
+            shader = new WaterShader();
+            shader->Shader::start();
+            shader->loadTextures();
+            shader->loadProjectionMatrix(projectionMatrix);
+            shader->Shader::stop();
+        }
+
+        void render(glm::mat4 viewMatrix) {
+            shader->Shader::start();
+            shader->loadViewMatrix(viewMatrix);
             bind();
             loadWater(shader);
             unbind();
+            shader->Shader::stop();
         }
 
         void setWater(Entity* water, WaterFBOs* fbos) {

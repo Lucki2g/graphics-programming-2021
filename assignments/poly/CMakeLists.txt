@@ -25,7 +25,7 @@ file(GLOB target_src "*.h" "*.cpp") # look for source files
 file(GLOB target_shaders "shaders/*.vert" "shaders/*.frag") # look for shaders
 
 set(output_file "poly")
-add_executable(${output_file} ${target_src} ${target_shaders} engine/model.h engine/model_loader.h engine/entity_renderer.h shaders/static_shader.h entities/entity.h entities/camera.h entities/light.h util/obj_reader.h util/OBJ_loader.h generation/colour_generator.h config.h generation/height_map.h util/stb_image.h generation/FastNoiseLite.h util/guis/im_gui.h shaders/normal/normal_terrain_shader.h shaders/water/water_shader.h engine/water_renderer.h shaders/water/water_fbos.h util/guis/gui_texture.h engine/gui_renderer.h)
+add_executable(${output_file} ${target_src} ${target_shaders} engine/model.h engine/model_loader.h engine/entity_renderer.h shaders/static_shader.h entities/entity.h entities/camera.h entities/light.h util/obj_reader.h util/OBJ_loader.h generation/colour_generator.h config.h generation/height_map.h util/stb_image.h generation/FastNoiseLite.h util/guis/im_gui.h shaders/normal/normal_terrain_shader.h shaders/water/water_shader.h engine/water_renderer.h shaders/water/water_fbos.h util/guis/gui_texture.h engine/gui_renderer.h engine/master_renderer.h)
 
 ## set link libraries
 target_link_libraries(${output_file} ${libraries})

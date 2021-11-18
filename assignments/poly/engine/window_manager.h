@@ -52,24 +52,8 @@ void cursorCallback(GLFWwindow* window, double posX, double posY) {
     if (drawGui)
         return;
 
-    float yaw = camera->getYaw();
-    float pitch = camera->getPitch();
-
-    glm::vec3 forward = glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
-                                  sin(glm::radians(pitch)),
-                                  sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
-
-    float xOffset = posX - previous.x;
-    float yOffset = previous.y - posY; // reversed since y-coordinates range from bottom to top
+    camera->calculate(posX, posY, previous);
     previous = glm::vec2(posX, posY);
-
-    const float sensitivity = 0.1f;
-    xOffset *= sensitivity;
-    yOffset *= sensitivity;
-
-    camera->setForward(glm::normalize(forward));
-    camera->setPitch(std::max(std::min(pitch + yOffset, 89.0f), -89.0f));
-    camera->setYaw(yaw + xOffset);
 }
 
 void framebufferSizeCallback (GLFWwindow* window, int width, int height) {

@@ -5,7 +5,6 @@ in vec3 out_colour;
 in vec3 N;
 in vec3 L;
 
-uniform vec3 lightDirection;
 uniform vec3 lightColour;
 uniform vec3 ambientLightColour;
 uniform float ambientReflectance;

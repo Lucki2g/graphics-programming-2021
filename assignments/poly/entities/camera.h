@@ -53,6 +53,31 @@ class Camera {
         void invertPitch() {
             this->pitch = -pitch;
         }
+
+        void invertYaw() {
+            this->yaw = -yaw;
+        }
+
+        void calculateForward() {
+            glm::vec3 front = glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
+                                        sin(glm::radians(pitch)),
+                                        sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
+            forward = glm::normalize(front);
+        }
+
+        void calculate(double x, double y, glm::vec2 previous) {
+            calculateForward();
+
+            float xOffset = x - previous.x;
+            float yOffset = previous.y - y; // reversed since y-coordinates range from bottom to top
+
+            const float sensitivity = 0.1f;
+            xOffset *= sensitivity;
+            yOffset *= sensitivity;
+
+            pitch = std::max(std::min(pitch + yOffset, 89.0f), -89.0f);
+            yaw = (yaw + xOffset);
+        }
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_CAMERA_H
