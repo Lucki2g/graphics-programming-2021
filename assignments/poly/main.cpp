@@ -79,6 +79,7 @@ int main () {
     guis.push_back(new GuiTexture(waterFbOs->getReflectionTex(), glm::vec2(0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
     guis.push_back(new GuiTexture(waterFbOs->getRefractionTex(), glm::vec2(-0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
 
+
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
 
@@ -107,7 +108,7 @@ int main () {
 
         // render
         renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, config->amplitude + 20.0f));
-        waterRenderer->render(windowManager->getViewMatrix());
+        waterRenderer->render(windowManager->getViewMatrix(), camera->getPosition());
 
         // gui
         guiRenderer->render(guis);

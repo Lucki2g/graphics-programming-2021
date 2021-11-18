@@ -1,6 +1,7 @@
 #version 400 core
 
 in vec4 clipSpace;
+in vec3 toCamera;
 
 out vec4 FragColor;
 
@@ -18,5 +19,10 @@ void main(void) {
     vec4 reflectColour = texture(reflectionTexture, reflectTexCoordinates);
     vec4 refractColour = texture(refractionTexture, refractTexCoordinates);
 
-    FragColor = mix(reflectColour, refractColour, 0.5f);
+    // blending teqnuiqe
+    vec3 viewVector = normalize(toCamera);
+    float fresnel = dot(viewVector, vec3(0.0f, 1.0f, 0.0f));
+    fresnel = pow(fresnel, 5.0f); // increase reflectiveness
+
+    FragColor = mix(reflectColour, refractColour, fresnel);
 }

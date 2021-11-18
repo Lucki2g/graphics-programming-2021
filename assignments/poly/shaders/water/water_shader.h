@@ -33,6 +33,10 @@ class WaterShader : public Shader {
             Shader::setInt("refractionTexture", 1);
         }
 
+        void loadCameraPosition(glm::vec3 position) {
+            Shader::setVec3("cameraPosition", position);
+        }
+
     private:
         void bindAttributes() {
             Shader::bindAttribute(0, "in_position");

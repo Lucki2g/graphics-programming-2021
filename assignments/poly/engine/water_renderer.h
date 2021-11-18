@@ -45,9 +45,10 @@ class WaterRenderer {
             shader->Shader::stop();
         }
 
-        void render(glm::mat4 viewMatrix) {
+        void render(glm::mat4 viewMatrix, glm::vec3 camPosition) {
             shader->Shader::start();
             shader->loadViewMatrix(viewMatrix);
+            shader->loadCameraPosition(camPosition);
             bind();
             loadWater(shader);
             unbind();
