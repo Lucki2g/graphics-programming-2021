@@ -15,15 +15,15 @@ class MasterRenderer {
         EntityRenderer* entities;
         TerrainRenderer* terrains;
 
-        void prepare() {
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        }
-
 public:
         void init(glm::mat4 projectionMatrix) {
             entities = new EntityRenderer(projectionMatrix);
             terrains = new TerrainRenderer(projectionMatrix);
+        }
+
+        void prepare() {
+            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void render(Light* sun, glm::mat4 viewMatrix, Config* config, glm::vec4 clipPlane) {

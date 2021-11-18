@@ -90,7 +90,6 @@ int main () {
         // water
         // render scene to reflection texture
         waterFbOs->bindReflection();
-        std::cout << camera->getPosition().x << ", " << camera->getPosition().y << ", " << camera->getPosition().z << std::endl;
         float d = 2 * (camera->getPosition().y - waterEntity->getPosition().y);
         camera->move(glm::vec3(0, -d, 0)); // move camera under the water
         camera->invertPitch();
@@ -100,7 +99,6 @@ int main () {
         camera->invertPitch();
         camera->calculateForward();
         waterFbOs->unbindFrameBuffer();
-
 
         // render scene to refraction texture
         waterFbOs->bindRefraction();
