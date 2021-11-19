@@ -15,6 +15,7 @@ class EntityRenderer {
 
     private:
         std::vector<Entity*> entities;
+        StaticShader* shader;
 
         void bind(Entity* entity) {
             Model* model = entity->getModel();
@@ -44,17 +45,23 @@ class EntityRenderer {
         }
 
     public:
-        void prepare() {
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        EntityRenderer(glm::mat4 projectionMatrix) {
+            shader = new StaticShader();
+            shader->Shader::start();
+            shader->loadProjectionMatrix(projectionMatrix);
+            shader->Shader::stop();
         }
 
-        void render(StaticShader* shader) {
+        void render(Light* sun, glm::mat4 viewMatrix) {
+            shader->Shader::start();
+            shader->loadLight(sun);
+            shader->loadViewMatrix(viewMatrix);
             for (Entity* entity : entities) {
                 bind(entity);
                 loadEntity(entity, shader);
                 unbind();
             }
+            shader->Shader::stop();
         }
 
         void addEntity(Entity* entity) {

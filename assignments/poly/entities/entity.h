@@ -11,11 +11,11 @@
 class Entity {
     private:
         Model* model;
-        glm::vec3 position;
         glm::vec3 rotation;
         float scale;
 
     public:
+        glm::vec3 position;
         Entity(Model* model, glm::vec3 pos, glm::vec3 rot, float scale) {
             this->model = model;
             this->position = pos;

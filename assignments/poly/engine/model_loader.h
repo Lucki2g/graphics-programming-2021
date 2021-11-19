@@ -15,13 +15,38 @@ class Loader {
     private:
         std::vector<GLuint> vaos;
         std::vector<GLuint> vbos;
+        std::vector<GLuint> textures;
 
     public:
+        Model* loadToVao(const std::vector<float> &positions) {
+            int vao = createVao();
+            storeDataInAttributeList(0, 2, positions);
+            unbindVao();
+            return new Model(vao, positions.size() / 2);
+        }
+
+        Model* loadToVao(const std::vector<float> &positions, const std::vector<unsigned int> indices) {
+            int vao = createVao();
+            bindIndicesBuffer(indices);
+            storeDataInAttributeList(0, 2, positions);
+            unbindVao();
+            return new Model(vao, indices.size());
+        }
+
         Model* loadToVao(const std::vector<float> &positions, const std::vector<float> normals, const std::vector<unsigned int> indices) {
             int vao = createVao();
             bindIndicesBuffer(indices);
-            storeDataInAttributeList(0, positions);
-            storeDataInAttributeList(1, normals);
+            storeDataInAttributeList(0, 3,positions);
+            storeDataInAttributeList(1, 3,normals);
+            unbindVao();
+            return new Model(vao, indices.size());
+        }
+
+        Model* loadToVaoNoNormals(const std::vector<float> &positions, const std::vector<float> colours, const std::vector<unsigned int> indices) {
+            int vao = createVao();
+            bindIndicesBuffer(indices);
+            storeDataInAttributeList(0, 3,positions);
+            storeDataInAttributeList(2, 3,colours);
             unbindVao();
             return new Model(vao, indices.size());
         }
@@ -29,11 +54,20 @@ class Loader {
         Model* loadToVao(const std::vector<float> &positions, const std::vector<float> normals, const std::vector<float> colours, const std::vector<unsigned int> indices) {
             int vao = createVao();
             bindIndicesBuffer(indices);
-            storeDataInAttributeList(0, positions);
-            storeDataInAttributeList(1, normals);
-            storeDataInAttributeList(2, colours);
+            storeDataInAttributeList(0, 3,positions);
+            storeDataInAttributeList(1, 3,normals);
+            storeDataInAttributeList(2, 3,colours);
             unbindVao();
             return new Model(vao, indices.size());
+        }
+
+        Model* loadToVao(const std::vector<float> &positions, const std::vector<float> normals, const std::vector<float> colours) {
+            int vao = createVao();
+            storeDataInAttributeList(0, 3, positions);
+            storeDataInAttributeList(1, 3, normals);
+            storeDataInAttributeList(2, 3, colours);
+            unbindVao();
+            return new Model(vao, positions.size());
         }
 
         void clean() {
@@ -50,14 +84,14 @@ class Loader {
             return VAO;
         }
 
-        void storeDataInAttributeList(int attributeNumber, const std::vector<float> &data) {
+        void storeDataInAttributeList(int attributeNumber, int size, const std::vector<float> &data) {
             unsigned int VBO;
             glGenBuffers(1, &VBO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(GLfloat), &data[0], GL_STATIC_DRAW);
 
             // fill data
-            glVertexAttribPointer(attributeNumber, 3, GL_FLOAT, GL_FALSE, 0, 0);
+            glVertexAttribPointer(attributeNumber, size, GL_FLOAT, GL_FALSE, 0, 0);
 
             // unbind
             glBindBuffer(GL_ARRAY_BUFFER, 0);

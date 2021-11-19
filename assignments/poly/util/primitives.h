@@ -5,6 +5,14 @@
 #ifndef GRAPHICSPROGRAMMINGEXERCISES_PRIMITIVES_H
 #define GRAPHICSPROGRAMMINGEXERCISES_PRIMITIVES_H
 
+std::vector<float> quadVertices {0.0f, 0.0f,
+                                 0.0f, 1.0f,
+                                 1.0f, 1.0f,
+                                 1.0f, 0.0f};
+
+std::vector<unsigned int> quadIndices {0, 1, 2,
+                                       0, 2, 3};
+
 std::vector<float> cubeVertices {-1.0f, -1.0f, 1.0f,
                                  1.0f, -1.0f, 1.0f,
                                  1.0f, 1.0f, 1.0f,

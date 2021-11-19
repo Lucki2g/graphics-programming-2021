@@ -8,13 +8,14 @@
 #include "shader_program.h"
 #include "../entities/light.h"
 
-const char* TERRAIN_VERTEX_FILE = "shaders/terrain.vert";
-const char* TERRAIN_FRAGMENT_FILE = "shaders/terrain.frag";
-
 class TerrainShader : public Shader {
     public:
-        TerrainShader() : Shader(TERRAIN_VERTEX_FILE, TERRAIN_FRAGMENT_FILE) {
+        TerrainShader(const char* vertex, const char* fragment) : Shader(vertex, fragment) {
             bindAttributes();
+        }
+        TerrainShader(const char* vertex, const char* fragment, const char* geometry) : Shader(vertex, fragment, geometry) {
+            Shader::bindAttribute(0, "in_position");
+            Shader::bindAttribute(2, "in_colour");
         }
 
         void bindAttributes() {
@@ -47,6 +48,10 @@ class TerrainShader : public Shader {
 
         void loadDiffuseLighting(float reflectance) {
             Shader::setFloat("diffuseReflectance", reflectance);
+        }
+
+        void loadWaterClippingPlane(glm::vec4 plane) {
+            Shader::setVec4("waterClippingPlane", plane);
         }
 };
 

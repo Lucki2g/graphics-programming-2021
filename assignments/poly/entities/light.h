@@ -8,12 +8,11 @@
 #include <glm/vec3.hpp>
 
 class Light {
-    private:
-    glm::vec3 position;
+    public:
+        glm::vec3 position;
         glm::vec3 colour;
         float intensity;
 
-    public:
         Light(glm::vec3 pos, glm::vec3 col) {
             this->position = pos;
             this->colour = col;
