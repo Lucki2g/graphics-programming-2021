@@ -55,10 +55,23 @@ namespace rt{
             //  all intersection computations should happen in the same space, no matter what that space is)
             //  - create a ray with the camera origin, and the vector from the camera origin to the pixel you have just found
             //  - call the TraceRay method using that ray, and store the resulting color in the frame buffer (fb)
-            fb.paintAt(fb.W/2, fb.H/2, toRGBA32(white));
 
+            for (int col = 0; col < fb.W; col++) {
+                for (int row = 0; row < fb.H; row++) {
+
+                    int x = col - fb.W / 2;
+                    int y = row - fb.H / 2;
+                    vec3 screenSpacePos = vec3(x, y, 0);
+
+                    vec4 cameraSpacePos = view_to_model * vec4(screenSpacePos, 1);
+                    vec3 direction = cam_pos - cameraSpacePos;
+                    Ray* ray = new Ray(cam_pos, direction);
+
+                    color c = TraceRay(*ray, depth, vts);
+                    fb.paintAt(col, row, toRGBA32(c));
+                }
+            }
         }
-
 
         color TraceRay(const Ray & ray,
                        unsigned int depth,
