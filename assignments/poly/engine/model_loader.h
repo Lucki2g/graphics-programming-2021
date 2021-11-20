@@ -25,6 +25,14 @@ class Loader {
             return new Model(vao, positions.size() / 2);
         }
 
+        Model* loadToVao(const std::vector<float> &positions, const std::vector<float> &indicators) {
+            int vao = createVao();
+            storeDataInAttributeList(0, 2, positions);
+            storeDataInAttributeList(1, 4, indicators);
+            unbindVao();
+            return new Model(vao, positions.size() / 2);
+        }
+
         Model* loadToVao(const std::vector<float> &positions, const std::vector<unsigned int> indices) {
             int vao = createVao();
             bindIndicesBuffer(indices);

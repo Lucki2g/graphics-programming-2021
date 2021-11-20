@@ -149,7 +149,7 @@ class WindowManager {
     }
 
     glm::mat4 getProjectionMatrix() {
-        return glm::perspectiveFov(config->fov, (float) width, (float) height, config->near, config->far);
+        return glm::perspectiveFov(config->fov, (float) width, (float) height, config->near_plane, config->far_plane);
     }
 
     glm::mat4 getViewMatrix() {

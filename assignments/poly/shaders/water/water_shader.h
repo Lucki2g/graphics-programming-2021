@@ -31,15 +31,26 @@ class WaterShader : public Shader {
         void loadTextures() {
             Shader::setInt("reflectionTexture", 0);
             Shader::setInt("refractionTexture", 1);
+            Shader::setInt("depthTexture", 2);
         }
 
-        void loadCameraPosition(glm::vec3 position) {
+        void loadCameraInformation(glm::vec3 position, Config* config) {
             Shader::setVec3("cameraPosition", position);
+            Shader::setVec2("nearFarPlane", glm::vec2(config->near_plane, config->far_plane));
+        }
+
+        void loadHeight(float height) {
+            Shader::setFloat("height", height);
+        }
+
+        void loadWaveTime(float time) {
+            Shader::setFloat("waveTime", time);
         }
 
     private:
         void bindAttributes() {
             Shader::bindAttribute(0, "in_position");
+            Shader::bindAttribute(1, "in_indicators");
         }
 };
 #endif //ITU_GRAPHICS_PROGRAMMING_WATER_SHADER_H

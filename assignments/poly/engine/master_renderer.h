@@ -21,13 +21,14 @@ public:
             terrains = new TerrainRenderer(projectionMatrix);
         }
 
-        void prepare() {
-            glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        void prepare(Config* config) {
+            glm::vec3 colour = config->backgroundColour;
+            glClearColor(colour.x, colour.y, colour.z, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
         void render(Light* sun, glm::mat4 viewMatrix, Config* config, glm::vec4 clipPlane) {
-            prepare();
+            prepare(config);
             entities->render(sun, viewMatrix);
             terrains->render(sun, clipPlane, viewMatrix, config);
         }

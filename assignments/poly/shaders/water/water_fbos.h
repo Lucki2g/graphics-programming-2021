@@ -23,7 +23,7 @@ class WaterFBOs {
         void initReflection() {
             reflectionFrameBuffer = createFrameBuffer();
             reflectionTexture = createColourAttachment(config->reflection_width, config->reflection_height);
-            reflectionDepthBuffer = createDepthAttachment(config->reflection_width, config->reflection_height);
+            reflectionDepthBuffer = createRenderBuffer(config->reflection_width, config->reflection_height);
             if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
                 std::cout << "generated reflection: " << reflectionFrameBuffer << std::endl;
             unbindFrameBuffer();
@@ -32,7 +32,7 @@ class WaterFBOs {
         void initRefraction() {
             refractionFrameBuffer = createFrameBuffer();
             refractionTexture = createColourAttachment(config->refraction_width, config->refraction_height);
-            refractionDepthTexture = createRenderBuffer(config->refraction_width, config->refraction_height);
+            refractionDepthTexture = createDepthAttachment(config->refraction_width, config->refraction_height);
             if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
                 std::cout << "generated refraction: " << refractionFrameBuffer << std::endl;
             unbindFrameBuffer();
@@ -68,8 +68,8 @@ class WaterFBOs {
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL); // 32 bit depth texture
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0); // add texture to currently bound fbo
             return texture;
         }
@@ -87,8 +87,8 @@ class WaterFBOs {
     public:
         WaterFBOs(Config* config) {
             this->config = config;
-            initReflection();
             initRefraction();
+            initReflection();
         }
 
         void unbindFrameBuffer() { // unbinds by switching to default buffer
@@ -112,7 +112,7 @@ class WaterFBOs {
             return refractionTexture;
         }
 
-        unsigned int getRefractionDepth() {
+        unsigned int getRefractionDepthTex() {
             return refractionDepthTexture;
         }
 

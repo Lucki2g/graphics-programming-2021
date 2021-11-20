@@ -13,9 +13,13 @@ uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 
+uniform vec4 waterClippingPlane; // used for plane equation (normal, height)
+
 void main(void) {
     vec4 worldPosition = transformationMatrix * vec4(in_position, 1.0);
     gl_Position = projectionMatrix * viewMatrix * worldPosition;
+
+    gl_ClipDistance[0] = dot(worldPosition, waterClippingPlane); // test for clipping
 
     N = normalize(mat3(transpose(inverse(transformationMatrix))) * in_normal);
     L = normalize(lightPosition - worldPosition.xyz);

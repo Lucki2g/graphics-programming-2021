@@ -22,16 +22,17 @@ struct Config {
     /** WINDOW **/
     int width = 1080;
     int height = 720;
+    glm::vec3 backgroundColour = {1.0f, 1.0f, 1.0f};
 
     /** CAMERA **/
     float fov = 70.0f;
-    float near = 0.1f;
-    float far = 1000.0f;
-    float speed = 2.0f;
+    float near_plane = 0.1f;
+    float far_plane = 1000.0f;
+    float speed = 0.50f;
     glm::vec3 start_position = glm::vec3(0, 50, 0);
 
     /** TERRAIN **/
-    int terrain_size = 100;
+    int terrain_size = 400;
     float size = 200.0f;
     std::vector<glm::vec3> pallet = {
             glm::vec3(201, 178, 99),
@@ -45,9 +46,9 @@ struct Config {
     float part = 1.0f / (pallet.size() - 1);
 
     float roughness = 0.35f;
-    float amplitude = 10.0f;
+    float amplitude = 20.0f;
     int octaves = 3;
-    float frequency = 0.1f;
+    float frequency = 0.04f;
     int generationSetting = NORMAL;
 
     int HEIGHTMAP = 0;
@@ -68,10 +69,12 @@ struct Config {
     float diffuseReflectance = 1.0f;
 
     /** WATER **/
-    const int reflection_width = width;//320;
-    const int reflection_height = height;//180;
-    const int refraction_width = width;//1280;
-    const int refraction_height = height;//720;
+    int water_height = -1.0f;
+    float wave_speed = 0.004f;
+    const int reflection_width = width / 2;//320;
+    const int reflection_height = height / 2;//180;
+    const int refraction_width = width / 2;//1280;
+    const int refraction_height = height / 2;//720;
 
 };
 

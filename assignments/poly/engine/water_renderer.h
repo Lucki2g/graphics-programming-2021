@@ -13,6 +13,7 @@ class WaterRenderer {
         Entity* water;
         WaterFBOs* fbos;
         WaterShader* shader;
+        float time = 0.0f;
 
         void bind() {
             Model* model = water->getModel();
@@ -22,9 +23,16 @@ class WaterRenderer {
             glBindTexture(GL_TEXTURE_2D, fbos->getReflectionTex()); // reflection fbo
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, fbos->getRefractionTex()); // refraction fbo
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, fbos->getRefractionDepthTex()); // depth texture
+
+            // enable alpha blending
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 
         void unbind() {
+            glDisable(GL_BLEND);
             glDisableVertexAttribArray(0);
             glBindVertexArray(0);
         }
@@ -33,22 +41,24 @@ class WaterRenderer {
             glm::mat4 position = glm::translate(glm::vec3(water->getPosition()));
             glm::mat4 scale = glm::scale(glm::vec3(water->getScale()));
             shader->loadTransformationMatrix(position * scale);
-            glDrawElements(GL_TRIANGLES, water->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
+            glDrawArrays(GL_TRIANGLES, 0, water->getModel()->getVertexCount());
         }
 
     public:
-        WaterRenderer(glm::mat4 projectionMatrix) {
+        WaterRenderer(glm::mat4 projectionMatrix, Config* config) {
             shader = new WaterShader();
             shader->Shader::start();
             shader->loadTextures();
             shader->loadProjectionMatrix(projectionMatrix);
+            shader->loadHeight(config->water_height);
             shader->Shader::stop();
         }
 
-        void render(glm::mat4 viewMatrix, glm::vec3 camPosition) {
+        void render(glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {
             shader->Shader::start();
             shader->loadViewMatrix(viewMatrix);
-            shader->loadCameraPosition(camPosition);
+            shader->loadCameraInformation(camPosition, config);
+            shader->loadWaveTime(time += config->wave_speed);
             bind();
             loadWater(shader);
             unbind();
