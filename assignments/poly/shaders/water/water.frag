@@ -1,9 +1,11 @@
 #version 400 core
 
-in vec4 clipSpace;
-in vec4 clipSpaceGrid;
-in vec3 toCamera;
-in vec3 out_normal;
+in vec4 pass_clipSpace;
+in vec4 pass_clipSpaceGrid;
+in vec3 pass_toCamera;
+in vec3 pass_normal;
+in vec3 pass_lighting_ambdif;
+in vec3 pass_lighting_spec;
 
 out vec4 FragColor;
 
@@ -46,8 +48,8 @@ vec2 getClipSpaceTexCoordinates(vec4 space) {
 
 void main(void) {
 
-    vec2 texCoordinatesGrid = getClipSpaceTexCoordinates(clipSpaceGrid);
-    vec2 texCoordinates = getClipSpaceTexCoordinates(clipSpace);
+    vec2 texCoordinatesGrid = getClipSpaceTexCoordinates(pass_clipSpaceGrid);
+    vec2 texCoordinates = getClipSpaceTexCoordinates(pass_clipSpace);
 
     vec2 refractTexCoordinates = texCoordinatesGrid.xy;
     vec2 reflectTexCoordinates = vec2(texCoordinatesGrid.x, -texCoordinatesGrid.y);
@@ -60,16 +62,17 @@ void main(void) {
     refractColour = applyMurk(refractColour, waterDepth); // apply water colour based on depth in water
     reflectColour = mix(reflectColour, waterColour, minBlueness); // apply water colour to reflections
 
-    // blending technuiqe
-    vec3 viewVector = normalize(toCamera);
-    float fresnel = dot(viewVector, vec3(0.0f, 1.0f, 0.0f));
+    // blending technuiqe (Fresnel)
+    vec3 viewVector = normalize(pass_toCamera);
+    float fresnel = dot(viewVector, normalize(pass_normal));
     fresnel = pow(fresnel, fresnelReflectiveness); // increase reflectiveness
+    fresnel = clamp(fresnel, 0.0, 1.0);
 
     // soft edges
     float alpha = clamp(waterDepth / softness, 0.0f, 1.0f);
 
-    //vec4 final_colour = vec4(mix(reflectColour, refractColour, fresnel), alpha); // actual
-    vec4 final_colour = vec4(out_normal, 1.0f); // normals
+    vec4 final_colour = vec4((mix(reflectColour, refractColour, fresnel) * pass_lighting_ambdif + pass_lighting_spec), alpha); // actual
+    //vec4 final_colour = vec4(out_normal, 1.0f); // normals
     //vec4 final_colour = vec4(mix(vec3(0.0f), vec3(1.0f), waterDepth), 1.0f); // depth
     FragColor = final_colour;
 }

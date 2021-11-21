@@ -111,7 +111,7 @@ int main () {
 
         // render
         renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, config->amplitude + 20.0f));
-        waterRenderer->render(windowManager->getViewMatrix(), camera->getPosition(), config);
+        // waterRenderer->render(sun, windowManager->getViewMatrix(), camera->getPosition(), config);
 
         // gui
         guiRenderer->render(guis);

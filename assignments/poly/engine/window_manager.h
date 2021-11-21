@@ -24,7 +24,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
     if (action == GLFW_PRESS) {
         switch (key) {
-            case GLFW_KEY_SPACE:
+            case GLFW_KEY_SPACE: case GLFW_KEY_ESCAPE:
                 drawGui = !drawGui;
                 glfwSetInputMode(window, GLFW_CURSOR, drawGui ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
                 break;
@@ -158,7 +158,7 @@ class WindowManager {
 
     void processInput() {
         int press = GLFW_PRESS;
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == press)
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == press && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
         if (glfwGetKey(window, GLFW_KEY_W) == press)

@@ -35,29 +35,34 @@ struct Config {
     int terrain_size = 400;
     float size = 200.0f;
     std::vector<glm::vec3> pallet = {
-            glm::vec3(201, 178, 99),
-            glm::vec3(135, 184, 82),
-            glm::vec3(80, 171, 93),
-            glm::vec3(120, 120, 120),
-            glm::vec3(200, 200, 210)
+            // beach
+            glm::vec3(253,252,220),
+            glm::vec3(254, 217, 183),
+            // grass
+            glm::vec3(178, 227, 140),
+            glm::vec3(150, 218, 139),
+            // mountain
+            glm::vec3(206, 212, 218),
+            glm::vec3(73, 80, 87),
+            // snow
+            glm::vec3(248, 249, 250)
     };
     float spread = 0.45f;
     float half_spread = spread / 2.0;
     float part = 1.0f / (pallet.size() - 1);
 
-    float roughness = 0.35f;
-    float amplitude = 20.0f;
-    int octaves = 3;
-    float frequency = 0.04f;
-    int generationSetting = NORMAL;
+    float amplitude = 12.0f;
+    int octaves = 10;
+    float frequency = 0.035f;
+    int generationSetting = HEIGHTMAP;
 
     int HEIGHTMAP = 0;
     int PERLIN = 1;
 
     /** LIGHTING **/
     // ambient light
-    glm::vec3 ambientLightColour = {1.0f, 1.0f, 1.0f};
-    float ambientLightIntensity = 0.2f;
+    glm::vec3 ambientLightColour = {1.0f, 0.8f, 0.8f};
+    float ambientLightIntensity = 0.3f;
     // universal
     glm::vec3 lightDirection = { 0.5f, -1.0f, 0.5f };
     // light 1
@@ -65,11 +70,11 @@ struct Config {
     glm::vec3 lightPosition = {-terrain_size / 2, 300.0f, -terrain_size / 2};
     float lightIntensity = 1.0f;
     // material
-    float ambientReflectance = 0.5f;
-    float diffuseReflectance = 1.0f;
+    float ambientReflectance = 0.3f;
+    float diffuseReflectance = 0.8f;
 
     /** WATER **/
-    int water_height = -1.0f;
+    int water_height = 1.0f;
     float wave_speed = 0.004f;
     const int reflection_width = width / 2;//320;
     const int reflection_height = height / 2;//180;

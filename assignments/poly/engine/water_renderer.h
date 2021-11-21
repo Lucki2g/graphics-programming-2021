@@ -19,6 +19,7 @@ class WaterRenderer {
             Model* model = water->getModel();
             glBindVertexArray(model->getVao());
             glEnableVertexAttribArray(0); // positions
+            glEnableVertexAttribArray(4); // indicators
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, fbos->getReflectionTex()); // reflection fbo
             glActiveTexture(GL_TEXTURE1);
@@ -34,13 +35,11 @@ class WaterRenderer {
         void unbind() {
             glDisable(GL_BLEND);
             glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(4);
             glBindVertexArray(0);
         }
 
         void loadWater(WaterShader* shader) {
-            glm::mat4 position = glm::translate(glm::vec3(water->getPosition()));
-            glm::mat4 scale = glm::scale(glm::vec3(water->getScale()));
-            shader->loadTransformationMatrix(position * scale);
             glDrawArrays(GL_TRIANGLES, 0, water->getModel()->getVertexCount());
         }
 
@@ -54,9 +53,12 @@ class WaterRenderer {
             shader->Shader::stop();
         }
 
-        void render(glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {
+        void render(Light* sun, glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {
             shader->Shader::start();
+            shader->loadLight(sun);
             shader->loadViewMatrix(viewMatrix);
+            shader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
+            shader->loadDiffuseLighting(config->diffuseReflectance);
             shader->loadCameraInformation(camPosition, config);
             shader->loadWaveTime(time += config->wave_speed);
             bind();

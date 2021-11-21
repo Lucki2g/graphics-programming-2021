@@ -16,10 +16,6 @@ class WaterShader : public Shader {
             bindAttributes();
         }
 
-        void loadTransformationMatrix(glm::mat4 matrix) {
-            Shader::setMat4("transformationMatrix", matrix);
-        }
-
         void loadProjectionMatrix(glm::mat4 matrix) {
             Shader::setMat4("projectionMatrix", matrix);
         }
@@ -47,10 +43,24 @@ class WaterShader : public Shader {
             Shader::setFloat("waveTime", time);
         }
 
+        void loadLight(Light* light) {
+            Shader::setVec3("lightPosition", light->getPosition());
+            Shader::setVec3("lightColour", light->getColour() * light->getIntensity());
+        }
+
+        void loadAmbientLighting(glm::vec3 colour, float intensity, float reflectance) {
+            Shader::setVec3("ambientLightColour", colour * intensity);
+            Shader::setFloat("ambientReflectance", reflectance);
+        }
+
+        void loadDiffuseLighting(float reflectance) {
+            Shader::setFloat("diffuseReflectance", reflectance);
+        }
+
     private:
         void bindAttributes() {
             Shader::bindAttribute(0, "in_position");
-            Shader::bindAttribute(1, "in_indicators");
+            Shader::bindAttribute(4, "in_indicators");
         }
 };
 #endif //ITU_GRAPHICS_PROGRAMMING_WATER_SHADER_H

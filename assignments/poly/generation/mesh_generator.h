@@ -57,9 +57,39 @@ class MeshGenerator {
             glm::vec2 v2 = corners.at(i2);
 
             store(v, getIndicator(v, v1, v2), positions, indicators);
+            //test(v, getIndicator(v, v1, v2));
             store(v1, getIndicator(v1, v2, v), positions, indicators);
             store(v2, getIndicator(v2, v, v1), positions, indicators);
         }
+
+        /*float createOffset(float x, float z) {
+            float radiansX = (x / 10.0f) * 2.0f * PI;
+            float radiansZ = (z / 10.0f) * 2.0f * PI;
+            return 1.0f * 0.5f * (sin(radiansZ) + cos(radiansX));
+        }
+
+        glm::vec3 distort(glm::vec3 vertex) {
+            float distX = createOffset(vertex.x, vertex.z);
+            float distY = createOffset(vertex.x, vertex.z);
+            float distZ = createOffset(vertex.x, vertex.z);
+            return vertex + glm::vec3(distX, distY, distZ);
+        }
+
+        void test(glm::vec2 v1, glm::vec4 ind) {
+            glm::vec3 v = glm::vec3(v1.x, 0.0f, v1.y);
+            glm::vec3 v2 = v + glm::vec3(ind.x, 0.0f, ind.y);
+            glm::vec3 v3 = v + glm::vec3(ind.z, 0.0f, ind.w);
+
+            v = distort(v);
+            v2 = distort(v2);
+            v3 = distort(v3);
+
+            glm::vec3 t1 = v2 - v;
+            glm::vec3 t2 = v3 - v;
+
+            glm::vec3 res = glm::normalize(glm::cross(t1, t2));
+            std::cout << res.x << ", " << res.y << ", " << res.z << std::endl;
+        }*/
 
         glm::vec4 getIndicator(glm::vec2 v, glm::vec2 v1, glm::vec2 v2) {
             glm::vec2 offset1 = v1 - v;
@@ -209,9 +239,6 @@ class MeshGenerator {
         }
 
         Model* generateWater(Loader* loader) {
-            HeightsGenerator* generator = new HeightsGenerator(config);
-
-            float** gen_heights = generateHeights(generator);
 
             std::vector<float> out_positions;
             std::vector<float> out_indicators;
@@ -293,7 +320,7 @@ class MeshGenerator {
             for (int z = 0; z < config->terrain_size + 1; z++) {
                 heights[z] = new float[config->terrain_size + 1];
                 for (int x = 0; x < config->terrain_size + 1; x++) {
-                    float height = generator->generateHeight(x, z, config->PERLIN);
+                    float height = generator->generateHeight(x, z, config->HEIGHTMAP);
                     //std::cout << "x: " << x << " z: " << z << " = " << height << std::endl;
                     heights[z][x] = height;
                 }

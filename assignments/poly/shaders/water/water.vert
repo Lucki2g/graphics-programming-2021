@@ -2,32 +2,65 @@
 in vec2 in_position;
 in vec4 in_indicators; // indicates the two other vertices of the triangle
 
-out vec4 clipSpace;
-out vec4 clipSpaceGrid;
-out vec3 toCamera;
-out vec3 out_normal;
+out vec4 pass_clipSpace;
+out vec4 pass_clipSpaceGrid;
+out vec3 pass_toCamera;
+out vec3 pass_normal;
+out vec3 pass_lighting_ambdif;
+out vec3 pass_lighting_spec;
 
 uniform vec3 cameraPosition;
-uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform float height;
 uniform float waveTime;
 
+uniform vec3 lightPosition;
+uniform vec3 lightColour;
+uniform vec3 ambientLightColour;
+uniform float ambientReflectance;
+uniform float diffuseReflectance;
+
 const float PI = 3.1415926535897932384626433832795f;
 const float waveLength = 10.0f;
 const float waveAmplitude = 1.0f;
+// TODO - make uniform variables
+const float specularReflectivity = 0.4f;
+const float shineDamper = 20.0f;
 
-float createOffset(float x, float z) {
-    float radiansX = (x / waveLength + waveTime) * 2.0f * PI;
-    float radiansZ = (z / waveLength + waveTime) * 2.0f * PI;
+const vec3 lightDirection = vec3(0.3f, -1f, 0.5f);
+
+vec3 getAmbientDiffuse(vec3 toCam, vec3 L, vec3 N) {
+    // ambient
+    vec3 ambient = lightColour * ambientReflectance;
+
+    // diffuse
+    float diff = max(dot(L, N), 0.0);
+    vec3 diffuse = diff * diffuseReflectance * lightColour;
+
+    return (ambient + diffuse);
+}
+
+vec3 getSpecular(vec3 toCam, vec3 L, vec3 N) {
+    // specular
+    vec3 reflectedLightDirection = reflect(-L, N);
+    float specularFactor = dot(reflectedLightDirection , toCam);
+    specularFactor = max(specularFactor, 0.0);
+    specularFactor = pow(specularFactor, shineDamper);
+    vec3 specular = specularFactor * specularReflectivity * lightColour;
+    return specular;
+}
+
+float createOffset(float x, float z, float val1, float val2) {
+    float radiansX = ((mod(x + z * x * val1, waveLength)/waveLength) + waveTime * mod(x * 0.8 + z, 1.5)) * 2.0 * PI;
+    float radiansZ = ((mod(val2 * (z * x + x * z), waveLength)/waveLength) + waveTime * 2.0 * mod(x , 2.0) ) * 2.0 * PI;
     return waveAmplitude * 0.5f * (sin(radiansZ) + cos(radiansX));
 }
 
 vec3 distort(vec3 vertex) {
-    float distX = createOffset(vertex.x, vertex.z);
-    float distY = createOffset(vertex.x, vertex.z);
-    float distZ = createOffset(vertex.x, vertex.z);
+    float distX = createOffset(vertex.x, vertex.z, 0.2f, 0.1f);
+    float distY = createOffset(vertex.x, vertex.z, 0.1f, 0.3f);
+    float distZ = createOffset(vertex.x, vertex.z, 0.15f, 0.2f);
     return vertex + vec3(distX, distY, distZ);
 }
 
@@ -40,20 +73,27 @@ vec3 calcNormal(vec3 v, vec3 v1, vec3 v2) {
 
 void main(void) {
 
-    vec3 vertex = (transformationMatrix * vec4(vec3(in_position.x, height, in_position.y), 1.0)).xyz;
-    vec3 v1 = vertex + vec3(in_indicators.x, 0.0f, in_indicators.y);
-    vec3 v2 = vertex + vec3(in_indicators.z, 0.0f, in_indicators.w);
+    vec3 vertex = vec3(in_position.x, height, in_position.y);
+    vec3 offset1 = vec3(in_indicators.x, 0.0f, in_indicators.y);
+    vec3 offset2 = vec3(in_indicators.z, 0.0f, in_indicators.w);
+    vec3 v1 = vertex + offset1;
+    vec3 v2 = vertex + offset2;
 
-    clipSpaceGrid = projectionMatrix * viewMatrix * vec4(vertex, 1.0f);
+    pass_clipSpaceGrid = projectionMatrix * viewMatrix * vec4(vertex, 1.0f);
 
     vertex = distort(vertex);
     v1 = distort(v1);
     v2 = distort(v2);
 
-    out_normal = calcNormal(vertex, v1, v2);
+    pass_normal = calcNormal(vertex, v1, v2);
 
-    clipSpace = projectionMatrix * viewMatrix * vec4(vertex, 1.0f);
+    pass_clipSpace = projectionMatrix * viewMatrix * vec4(vertex, 1.0f);
+    gl_Position = pass_clipSpace;
 
-    gl_Position = clipSpace;
-    toCamera = normalize(cameraPosition - vertex);
+    pass_toCamera = normalize(cameraPosition - vertex);
+
+    // lighting
+    vec3 L = -normalize(lightDirection);
+    pass_lighting_spec = getSpecular(pass_toCamera, L, pass_normal);
+    pass_lighting_ambdif = getAmbientDiffuse(pass_toCamera, L, pass_normal);
 }
