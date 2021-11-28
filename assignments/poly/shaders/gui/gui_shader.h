@@ -20,6 +20,10 @@ class GuiShader : public Shader {
             Shader::setMat4("transformationMatrix", matrix);
         }
 
+        void loadIsDepth(bool b) {
+            Shader::setBool("isDepthTexture", b);
+        }
+
     private:
         void bindAttributes() {
             Shader::bindAttribute(0, "in_position");

@@ -5,14 +5,11 @@
 #ifndef ITU_GRAPHICS_PROGRAMMING_WATER_SHADER_H
 #define ITU_GRAPHICS_PROGRAMMING_WATER_SHADER_H
 
-#include "../shader_program.h"
-
-const char* WATER_VERTEX_FILE = "shaders/water/water.vert";
-const char* WATER_FRAGMENT_FILE = "shaders/water/water.frag";
+#include "shader_program.h"
 
 class WaterShader : public Shader {
     public:
-        WaterShader() : Shader(WATER_VERTEX_FILE, WATER_FRAGMENT_FILE) {
+        WaterShader(const char* vertex, const char* fragment) : Shader(vertex, fragment) {
             bindAttributes();
         }
 
@@ -55,6 +52,10 @@ class WaterShader : public Shader {
 
         void loadDiffuseLighting(float reflectance) {
             Shader::setFloat("diffuseReflectance", reflectance);
+        }
+
+        void loadLightDirection(glm::vec3 direction) {
+            Shader::setVec3("lightDirection", direction);
         }
 
     private:

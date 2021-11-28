@@ -23,6 +23,7 @@ struct Config {
     int width = 1080;
     int height = 720;
     glm::vec3 backgroundColour = {1.0f, 1.0f, 1.0f};
+    bool showFbos = false;
 
     /** CAMERA **/
     float fov = 70.0f;
@@ -33,7 +34,7 @@ struct Config {
 
     /** TERRAIN **/
     int terrain_size = 400;
-    float size = 200.0f;
+    // float size = 200.0f;
     std::vector<glm::vec3> pallet = {
             // beach
             glm::vec3(253,252,220),
@@ -74,7 +75,7 @@ struct Config {
     float diffuseReflectance = 0.8f;
 
     /** WATER **/
-    int water_height = 1.0f;
+    int water_height = -1.0f;
     float wave_speed = 0.004f;
     const int reflection_width = width / 2;//320;
     const int reflection_height = height / 2;//180;

@@ -1,16 +1,16 @@
 #version 400 core
 
-layout (location = 0) in vec3 in_position;
-layout (location = 1) in vec3 in_normal;
-layout (location = 2) in vec3 in_colour;
+in vec3 in_position;
+in vec3 in_normal;
+in vec3 in_colour;
 
-out vec3 out_colour;
+flat out vec3 out_colour;
 
-uniform vec3 lightPosition;
 uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 
+uniform vec3 lightDirection;
 uniform vec3 lightColour;
 uniform vec3 ambientLightColour;
 uniform float ambientReflectance;
@@ -18,17 +18,15 @@ uniform float diffuseReflectance;
 
 uniform vec4 waterClippingPlane; // used for plane equation (normal, height)
 
-const vec3 lightDirection = vec3(0.3f, -1f, 0.5f);
-
 vec3 getLight() {
 
-    vec3 N = in_normal.xyz;
+    vec3 N = normalize(mat3(transpose(inverse(transformationMatrix))) * in_normal);
 
     // ambient
     vec3 ambient = lightColour * ambientReflectance;
 
     // diffuse
-    float diff = max(dot(lightDirection, N), 0.0);
+    float diff = max(dot(-lightDirection, N), 0.0);
     vec3 diffuse = diff * diffuseReflectance * lightColour;
 
     return (ambient + diffuse);

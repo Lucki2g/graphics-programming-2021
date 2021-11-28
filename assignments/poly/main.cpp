@@ -8,21 +8,11 @@
 #include "engine/terrain_renderer.h"
 #include "engine/entity_renderer.h"
 #include "util/primitives.h"
-#include "shaders/static_shader.h"
-#include "shaders/terrain_shader.h"
-#include "shaders/shader_program.h"
 #include "util/obj_reader.h"
-#include "shaders/normal/normal_terrain_shader.h"
 #include <map>
-#include <shaders/vertexcopy/copy_terrain_shader.h>
-#include <shaders/geometry/geomoetry_terrain_shader.h>
-#include <shaders/flat/flat_terrain_shader.h>
 #include <engine/water_renderer.h>
-#include <shaders/water/water_fbos.h>
 #include <engine/gui_renderer.h>
-#include <util/guis/gui_texture.h>
 #include <engine/master_renderer.h>
-#include <generation/mesh_generator.h>
 
 void print(std::string s);
 void renderTerrain(Config* config, NormalTerrainShader* normalShader, Light* sun, WindowManager* windowManager,
@@ -78,9 +68,9 @@ int main () {
 
     GuiRenderer* guiRenderer = new GuiRenderer(loader);
     std::vector<GuiTexture*> guis = {};
-    //guis.push_back(new GuiTexture(waterFbOs->getReflectionTex(), glm::vec2(0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
-    //guis.push_back(new GuiTexture(waterFbOs->getRefractionTex(), glm::vec2(-0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
-
+    guis.push_back(new GuiTexture(waterFbOs->getReflectionTex(), glm::vec2(0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
+    guis.push_back(new GuiTexture(waterFbOs->getRefractionTex(), glm::vec2(-0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
+    guis.push_back(new GuiTexture(waterFbOs->getRefractionDepthTex(), glm::vec2(-0.5f, -0.5f), glm::vec2(0.25f, 0.25f), true));
 
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
@@ -111,10 +101,10 @@ int main () {
 
         // render
         renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, config->amplitude + 20.0f));
-        // waterRenderer->render(sun, windowManager->getViewMatrix(), camera->getPosition(), config);
+        waterRenderer->render(sun, windowManager->getViewMatrix(), camera->getPosition(), config);
 
         // gui
-        guiRenderer->render(guis);
+        if (config->showFbos) guiRenderer->render(guis);
         if (windowManager->shouldDrawGui())
             gui->drawGui();
 

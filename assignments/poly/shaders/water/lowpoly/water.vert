@@ -9,14 +9,16 @@ out vec3 pass_normal;
 out vec3 pass_lighting_ambdif;
 out vec3 pass_lighting_spec;
 
+// matrices and camera
 uniform vec3 cameraPosition;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform float height;
 uniform float waveTime;
 
-uniform vec3 lightPosition;
+// lighting
 uniform vec3 lightColour;
+uniform vec3 lightDirection;
 uniform vec3 ambientLightColour;
 uniform float ambientReflectance;
 uniform float diffuseReflectance;
@@ -28,22 +30,21 @@ const float waveAmplitude = 1.0f;
 const float specularReflectivity = 0.4f;
 const float shineDamper = 20.0f;
 
-const vec3 lightDirection = vec3(0.3f, -1f, 0.5f);
 
-vec3 getAmbientDiffuse(vec3 toCam, vec3 L, vec3 N) {
+vec3 getAmbientDiffuse(vec3 toCam, vec3 N) {
     // ambient
     vec3 ambient = lightColour * ambientReflectance;
 
     // diffuse
-    float diff = max(dot(L, N), 0.0);
+    float diff = max(dot(lightDirection, N), 0.0);
     vec3 diffuse = diff * diffuseReflectance * lightColour;
 
     return (ambient + diffuse);
 }
 
-vec3 getSpecular(vec3 toCam, vec3 L, vec3 N) {
+vec3 getSpecular(vec3 toCam, vec3 N) {
     // specular
-    vec3 reflectedLightDirection = reflect(-L, N);
+    vec3 reflectedLightDirection = reflect(lightDirection, N);
     float specularFactor = dot(reflectedLightDirection , toCam);
     specularFactor = max(specularFactor, 0.0);
     specularFactor = pow(specularFactor, shineDamper);
@@ -52,8 +53,8 @@ vec3 getSpecular(vec3 toCam, vec3 L, vec3 N) {
 }
 
 float createOffset(float x, float z, float val1, float val2) {
-    float radiansX = ((mod(x + z * x * val1, waveLength)/waveLength) + waveTime * mod(x * 0.8 + z, 1.5)) * 2.0 * PI;
-    float radiansZ = ((mod(val2 * (z * x + x * z), waveLength)/waveLength) + waveTime * 2.0 * mod(x , 2.0) ) * 2.0 * PI;
+    float radiansX = (x / waveLength + waveTime) * 2.0 * PI;
+    float radiansZ = (z / waveLength + waveTime) * 2.0 * PI;
     return waveAmplitude * 0.5f * (sin(radiansZ) + cos(radiansX));
 }
 
@@ -94,6 +95,6 @@ void main(void) {
 
     // lighting
     vec3 L = -normalize(lightDirection);
-    pass_lighting_spec = getSpecular(pass_toCamera, L, pass_normal);
-    pass_lighting_ambdif = getAmbientDiffuse(pass_toCamera, L, pass_normal);
+    pass_lighting_spec = getSpecular(pass_toCamera, pass_normal);
+    pass_lighting_ambdif = getAmbientDiffuse(pass_toCamera, pass_normal);
 }

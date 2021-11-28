@@ -7,8 +7,8 @@
 
 #include "shaders/terrain_shader.h"
 
-const char* FLAT_TERRAIN_VERTEX_FILE = "shaders/flat/terrain.vert";
-const char* FLAT_TERRAIN_FRAGMENT_FILE = "shaders/flat/terrain.frag";
+const char* FLAT_TERRAIN_VERTEX_FILE = "shaders/terrain/flat/terrain.vert";
+const char* FLAT_TERRAIN_FRAGMENT_FILE = "shaders/terrain/flat/terrain.frag";
 
 class FlatTerrainShader : public TerrainShader {
     public:

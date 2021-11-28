@@ -39,6 +39,7 @@ class GuiRenderer {
                 glm::mat4 translation = glm::translate(glm::vec3(texture->getPosition(), 0));
                 glm::mat4 scale = glm::scale(glm::vec3(texture->getScale(), 1.0f));
                 shader->loadTransformationMatrix(translation * scale);
+                shader->loadIsDepth(texture->isDepthTexture());
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, quad->getVertexCount());
             }
             glDisableVertexAttribArray(0);

@@ -7,9 +7,9 @@
 
 #include "shaders/terrain_shader.h"
 
-const char* GEOMETRY_TERRAIN_VERTEX_FILE = "shaders/geometry/terrain.vert";
-const char* GEOMETRY_TERRAIN_FRAGMENT_FILE = "shaders/geometry/terrain.frag";
-const char* GEOMETRY_TERRAIN_GEOMETRY_FILE = "shaders/geometry/terrain.glsl";
+const char* GEOMETRY_TERRAIN_VERTEX_FILE = "shaders/terrain/geometry/terrain.vert";
+const char* GEOMETRY_TERRAIN_FRAGMENT_FILE = "shaders/terrain/geometry/terrain.frag";
+const char* GEOMETRY_TERRAIN_GEOMETRY_FILE = "shaders/terrain/geometry/terrain.glsl";
 
 class GeometryTerrainShader : public TerrainShader {
     public:

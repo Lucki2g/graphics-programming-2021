@@ -5,14 +5,16 @@
 #ifndef ITU_GRAPHICS_PROGRAMMING_WATER_RENDERER_H
 #define ITU_GRAPHICS_PROGRAMMING_WATER_RENDERER_H
 
-#include <shaders/water/water_shader.h>
+#include <shaders/water_shader.h>
 #include <shaders/water/water_fbos.h>
+#include <shaders/water/normal/normal_water_shader.h>
+#include <map>
 
 class WaterRenderer {
     private:
         Entity* water;
         WaterFBOs* fbos;
-        WaterShader* shader;
+        std::map<int, std::unique_ptr<WaterShader>> shaders;
         float time = 0.0f;
 
         void bind() {
@@ -45,20 +47,27 @@ class WaterRenderer {
 
     public:
         WaterRenderer(glm::mat4 projectionMatrix, Config* config) {
-            shader = new WaterShader();
-            shader->Shader::start();
-            shader->loadTextures();
-            shader->loadProjectionMatrix(projectionMatrix);
-            shader->loadHeight(config->water_height);
-            shader->Shader::stop();
+            NormalWaterShader* normalShader;
+            normalShader = new NormalWaterShader();
+            normalShader->Shader::start();
+            normalShader->loadTextures();
+            normalShader->loadProjectionMatrix(projectionMatrix);
+            normalShader->loadHeight(config->water_height);
+            normalShader->Shader::stop();
+            shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(NORMAL, normalShader));
         }
 
         void render(Light* sun, glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {
+
+            int mode = config->generationSetting;
+            WaterShader* shader = shaders[mode].get();
+
             shader->Shader::start();
             shader->loadLight(sun);
             shader->loadViewMatrix(viewMatrix);
             shader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
             shader->loadDiffuseLighting(config->diffuseReflectance);
+            shader->loadLightDirection(config->lightDirection);
             shader->loadCameraInformation(camPosition, config);
             shader->loadWaveTime(time += config->wave_speed);
             bind();

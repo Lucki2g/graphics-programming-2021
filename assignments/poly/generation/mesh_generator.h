@@ -121,6 +121,7 @@ class MeshGenerator {
             return loader->loadToVao(positions, normals, indices);
         }
 
+        /** NORMAL, MESH, FLAT **/
         Model* proceduralTerrain(Loader* loader) {
             HeightsGenerator* generator = new HeightsGenerator(config);
 
@@ -187,6 +188,7 @@ class MeshGenerator {
             return loader->loadToVao(out_positions, out_normals, out_colours, out_indices);
         }
 
+        /** VERTEX_DUB **/
         Model* generateDubVertexTerrain(Loader* loader) {
             HeightsGenerator* generator = new HeightsGenerator(config);
 
@@ -196,28 +198,28 @@ class MeshGenerator {
             std::vector<float> out_normals;
             std::vector<float> out_colours;
 
-            for (int z = 0; z < config->terrain_size; z++) {
-                for (int x = 0; x < config->terrain_size; x++) {
+            for (int x = 0; x < config->terrain_size; x++) {
+                for (int z = 0; z < config->terrain_size; z++) {
 
                     std::vector<float> heights = {
-                            getHeight(x, z, gen_heights),
-                            getHeight(x + 1, z, gen_heights),
-                            getHeight(x, z + 1, gen_heights),
-                            getHeight(x + 1, z + 1, gen_heights),
+                            getHeight(z, x, gen_heights),
+                            getHeight(z + 1, x, gen_heights),
+                            getHeight(z, x + 1, gen_heights),
+                            getHeight(z + 1, x + 1, gen_heights),
                     };
 
-                    /*std::vector<glm::vec3> corners = {
-                            glm::vec3(-((float) x / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(0), -((float) z / ((float) config->vertex_count - 1)) * config->size),
-                            glm::vec3(-((float) (x + 1) / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(1), -((float) z / ((float) config->vertex_count - 1)) * config->size),
-                            glm::vec3(-((float) x / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(2), -((float) (z + 1) / ((float) config->vertex_count - 1)) * config->size),
-                            glm::vec3(-((float) (x + 1) / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(3), -((float) (z + 1) / ((float) config->vertex_count - 1)) * config->size)
+                    /*std::vector<glm::vec3> corners = { // old from larger triangles
+                            glm::vec3(-((float) z / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(0), -((float) x / ((float) config->vertex_count - 1)) * config->size),
+                            glm::vec3(-((float) (z + 1) / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(1), -((float) x / ((float) config->vertex_count - 1)) * config->size),
+                            glm::vec3(-((float) z / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(2), -((float) (x + 1) / ((float) config->vertex_count - 1)) * config->size),
+                            glm::vec3(-((float) (z + 1) / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(3), -((float) (x + 1) / ((float) config->vertex_count - 1)) * config->size)
                     };*/
 
                     std::vector<glm::vec3> corners = {
-                            glm::vec3(x, heights.at(0), z),
-                            glm::vec3(x + 1, heights.at(1), z),
-                            glm::vec3(x, heights.at(2), z + 1),
-                            glm::vec3(x + 1, heights.at(3), z + 1)
+                            glm::vec3(z, heights.at(0), x),
+                            glm::vec3(z + 1, heights.at(1), x),
+                            glm::vec3(z, heights.at(2), x + 1),
+                            glm::vec3(z + 1, heights.at(3), x + 1)
                     };
 
                     std::vector<glm::vec3> cols = {
@@ -261,6 +263,7 @@ class MeshGenerator {
             return loader->loadToVao(out_positions, out_indicators);//out_normals);
         }
 
+        /** GEOMETRY **/
         Model* generateGeoTerrain(Loader* loader) {
             HeightsGenerator* generator = new HeightsGenerator(config);
 
@@ -316,7 +319,6 @@ class MeshGenerator {
         /************** HEIGHT ***************/
         float** generateHeights(HeightsGenerator* generator) {
             float** heights = new float*[config->terrain_size + 1];
-            std::cout << "HEIGHTS: " << std::endl;
             for (int z = 0; z < config->terrain_size + 1; z++) {
                 heights[z] = new float[config->terrain_size + 1];
                 for (int x = 0; x < config->terrain_size + 1; x++) {
