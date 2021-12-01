@@ -55,6 +55,7 @@ class WaterRenderer {
             normalShader->loadHeight(config->water_height);
             normalShader->Shader::stop();
             shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(NORMAL, normalShader));
+            shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(VERTEX_COPY, normalShader));
         }
 
         void render(Light* sun, glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {

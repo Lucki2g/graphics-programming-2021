@@ -110,7 +110,7 @@ class WindowManager {
             throw "Failed to load GLAD!";
 
         // enable depth buffer
-        glDepthRange(-1, 1);
+        // glDepthRange(-1, 1);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 

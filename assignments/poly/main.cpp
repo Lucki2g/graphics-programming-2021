@@ -59,6 +59,7 @@ int main () {
 
     Gui* gui = new Gui(config, sun, cubeEntity);
 
+
     /******************* WATER *****************/
     WaterFBOs* waterFbOs = new WaterFBOs(config);
 
