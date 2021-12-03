@@ -11,10 +11,10 @@
 #include <terrains/terrain.h>
 #include <shaders/terrain_shader.h>
 #include <map>
-#include <shaders/normal/normal_terrain_shader.h>
-#include <shaders/vertexcopy/copy_terrain_shader.h>
-#include <shaders/geometry/geomoetry_terrain_shader.h>
-#include <shaders/flat/flat_terrain_shader.h>
+#include <shaders/terrain/normal/normal_terrain_shader.h>
+#include <shaders/terrain/vertexcopy/copy_terrain_shader.h>
+#include <shaders/terrain/geometry/geomoetry_terrain_shader.h>
+#include <shaders/terrain/flat/flat_terrain_shader.h>
 #include "model.h"
 
 class TerrainRenderer {
@@ -40,7 +40,8 @@ class TerrainRenderer {
 
         void loadTerrain(Terrain* terrain, TerrainShader* shader) {
             glm::mat4 position = glm::translate(glm::vec3(terrain->getX(), 0, terrain->getZ()));
-            shader->loadTransformationMatrix(position);
+            glm::mat4 scale = glm::scale(glm::vec3(1.0f));
+            shader->loadTransformationMatrix(position * scale);
             // std::cout << terrain->getModel()->getVertexCount() << std::endl;
             if (terrain->usesIndices())
                 glDrawElements(GL_TRIANGLES, terrain->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
@@ -91,6 +92,7 @@ class TerrainRenderer {
             shader->loadViewMatrix(viewMatrix);
             shader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
             shader->loadDiffuseLighting(config->diffuseReflectance);
+            shader->loadLightDirection(config->lightDirection);
             for (Terrain* terrain : terrains[mode]) {
                 bind(terrain);
                 loadTerrain(terrain, shader);

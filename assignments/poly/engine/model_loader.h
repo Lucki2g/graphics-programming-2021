@@ -10,6 +10,15 @@
 #include <glad/glad.h>
 #include <vector>
 
+struct Vertex {
+    // position
+    glm::vec3 Position;
+    // normal
+    glm::vec3 Normal;
+    // colours
+    glm::vec3 Colours;
+};
+
 class Loader {
 
     private:
@@ -21,6 +30,14 @@ class Loader {
         Model* loadToVao(const std::vector<float> &positions) {
             int vao = createVao();
             storeDataInAttributeList(0, 2, positions);
+            unbindVao();
+            return new Model(vao, positions.size() / 2);
+        }
+
+        Model* loadToVao(const std::vector<float> positions, const std::vector<float> indicators) {
+            int vao = createVao();
+            storeDataInAttributeList(0, 2, positions);
+            storeDataInAttributeList(4, 4, indicators);
             unbindVao();
             return new Model(vao, positions.size() / 2);
         }
@@ -53,6 +70,7 @@ class Loader {
 
         Model* loadToVao(const std::vector<float> &positions, const std::vector<float> normals, const std::vector<float> colours, const std::vector<unsigned int> indices) {
             int vao = createVao();
+
             bindIndicesBuffer(indices);
             storeDataInAttributeList(0, 3,positions);
             storeDataInAttributeList(1, 3,normals);
@@ -62,12 +80,37 @@ class Loader {
         }
 
         Model* loadToVao(const std::vector<float> &positions, const std::vector<float> normals, const std::vector<float> colours) {
+
+            std::vector<Vertex> vertices;
+            for(unsigned int i = 0; i < positions.size() / 3; i++)
+            {
+                Vertex vertex;
+                glm::vec3 vector;
+                // positions
+                vertex.Position = glm::vec3(positions.at(i * 3), positions.at(3 * i + 1), positions.at(3 * i + 2));
+                // normals
+                vertex.Normal = glm::vec3(normals.at(i * 3), normals.at(3 * i + 1), normals.at(3 * i + 2));
+                // colours
+                vertex.Colours = glm::vec3(colours.at(i * 3), colours.at(3 * i + 1), colours.at(3 * i + 2));
+
+                vertices.push_back(vertex);
+            }
+
+
             int vao = createVao();
-            storeDataInAttributeList(0, 3, positions);
-            storeDataInAttributeList(1, 3, normals);
-            storeDataInAttributeList(2, 3, colours);
+            unsigned int VBO;
+            glGenBuffers(1, &VBO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Colours));
             unbindVao();
-            return new Model(vao, positions.size());
+            return new Model(vao, vertices.size());
         }
 
         void clean() {
@@ -84,14 +127,14 @@ class Loader {
             return VAO;
         }
 
-        void storeDataInAttributeList(int attributeNumber, int size, const std::vector<float> &data) {
+        void storeDataInAttributeList(int attributeNumber, int size, const std::vector<float> &data, bool normalized = false) {
             unsigned int VBO;
             glGenBuffers(1, &VBO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(GLfloat), &data[0], GL_STATIC_DRAW);
 
             // fill data
-            glVertexAttribPointer(attributeNumber, size, GL_FLOAT, GL_FALSE, 0, 0);
+            glVertexAttribPointer(attributeNumber, size, GL_FLOAT, normalized ? GL_TRUE : GL_FALSE, 0, 0);
 
             // unbind
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -112,5 +155,4 @@ class Loader {
             vbos.push_back(EBO);
         }
 };
-
 #endif //ITU_GRAPHICS_PROGRAMMING_MODEL_LOADER_H

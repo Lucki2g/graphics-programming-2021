@@ -7,8 +7,8 @@
 
 #include "shaders/terrain_shader.h"
 
-const char* COPY_TERRAIN_VERTEX_FILE = "shaders/vertexcopy/terrain.vert";
-const char* COPY_TERRAIN_FRAGMENT_FILE = "shaders/vertexcopy/terrain.frag";
+const char* COPY_TERRAIN_VERTEX_FILE = "shaders/terrain/vertexcopy/terrain.vert";
+const char* COPY_TERRAIN_FRAGMENT_FILE = "shaders/terrain/vertexcopy/terrain.frag";
 
 class CopyTerrainShader : public TerrainShader {
     public:

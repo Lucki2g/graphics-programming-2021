@@ -37,7 +37,7 @@ class TerrainShader : public Shader {
         }
 
         void loadLight(Light* light) {
-            Shader::setVec3("lightPosition", light->getPosition());
+            // Shader::setVec3("lightPosition", light->getPosition());
             Shader::setVec3("lightColour", light->getColour() * light->getIntensity());
         }
 
@@ -48,6 +48,10 @@ class TerrainShader : public Shader {
 
         void loadDiffuseLighting(float reflectance) {
             Shader::setFloat("diffuseReflectance", reflectance);
+        }
+
+        void loadLightDirection(glm::vec3 direction) {
+            Shader::setVec3("lightDirection", direction);
         }
 
         void loadWaterClippingPlane(glm::vec4 plane) {

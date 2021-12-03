@@ -5,50 +5,72 @@
 #ifndef ITU_GRAPHICS_PROGRAMMING_WATER_RENDERER_H
 #define ITU_GRAPHICS_PROGRAMMING_WATER_RENDERER_H
 
-#include <shaders/water/water_shader.h>
+#include <shaders/water_shader.h>
 #include <shaders/water/water_fbos.h>
+#include <shaders/water/normal/normal_water_shader.h>
+#include <map>
 
 class WaterRenderer {
     private:
         Entity* water;
         WaterFBOs* fbos;
-        WaterShader* shader;
+        std::map<int, std::unique_ptr<WaterShader>> shaders;
+        float time = 0.0f;
 
         void bind() {
             Model* model = water->getModel();
             glBindVertexArray(model->getVao());
             glEnableVertexAttribArray(0); // positions
+            glEnableVertexAttribArray(4); // indicators
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, fbos->getReflectionTex()); // reflection fbo
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, fbos->getRefractionTex()); // refraction fbo
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, fbos->getRefractionDepthTex()); // depth texture
+
+            // enable alpha blending
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
 
         void unbind() {
+            glDisable(GL_BLEND);
             glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(4);
             glBindVertexArray(0);
         }
 
         void loadWater(WaterShader* shader) {
-            glm::mat4 position = glm::translate(glm::vec3(water->getPosition()));
-            glm::mat4 scale = glm::scale(glm::vec3(water->getScale()));
-            shader->loadTransformationMatrix(position * scale);
-            glDrawElements(GL_TRIANGLES, water->getModel()->getVertexCount(), GL_UNSIGNED_INT, 0);
+            glDrawArrays(GL_TRIANGLES, 0, water->getModel()->getVertexCount());
         }
 
     public:
-        WaterRenderer(glm::mat4 projectionMatrix) {
-            shader = new WaterShader();
-            shader->Shader::start();
-            shader->loadTextures();
-            shader->loadProjectionMatrix(projectionMatrix);
-            shader->Shader::stop();
+        WaterRenderer(glm::mat4 projectionMatrix, Config* config) {
+            NormalWaterShader* normalShader;
+            normalShader = new NormalWaterShader();
+            normalShader->Shader::start();
+            normalShader->loadTextures();
+            normalShader->loadProjectionMatrix(projectionMatrix);
+            normalShader->loadHeight(config->water_height);
+            normalShader->Shader::stop();
+            shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(NORMAL, normalShader));
+            shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(VERTEX_COPY, normalShader));
         }
 
-        void render(glm::mat4 viewMatrix, glm::vec3 camPosition) {
+        void render(Light* sun, glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {
+
+            int mode = config->generationSetting;
+            WaterShader* shader = shaders[mode].get();
+
             shader->Shader::start();
+            shader->loadLight(sun);
             shader->loadViewMatrix(viewMatrix);
-            shader->loadCameraPosition(camPosition);
+            shader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
+            shader->loadDiffuseLighting(config->diffuseReflectance);
+            shader->loadLightDirection(config->lightDirection);
+            shader->loadCameraInformation(camPosition, config);
+            shader->loadWaveTime(time += config->wave_speed);
             bind();
             loadWater(shader);
             unbind();

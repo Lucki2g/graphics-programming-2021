@@ -21,7 +21,7 @@ class HeightsGenerator {
         HeightsGenerator(Config* config) {
             this->seed = rand() % 1000000000;
             this->noise = new PerlinNoise(seed, config);
-            // this->map = new HeightMap("models/HH.png", config);
+            this->map = new HeightMap("models/heightmap.png", config);
         }
 
         float generateHeight(int x, int z, int generator) {

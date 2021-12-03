@@ -11,12 +11,14 @@ class GuiTexture {
     private:
         int texture;
         glm::vec2 position, scale;
+        bool isDepth;
 
     public:
-        GuiTexture(int texture, glm::vec2 pos, glm::vec2 s) {
+        GuiTexture(int texture, glm::vec2 pos, glm::vec2 s, bool depth = false) {
             this->texture = texture;
             this->position = pos;
             this->scale = s;
+            this->isDepth = depth;
         }
 
         int getTexture() {
@@ -29,6 +31,10 @@ class GuiTexture {
 
         glm::vec2 getScale() {
             return scale;
+        }
+
+        bool isDepthTexture() {
+            return isDepth;
         }
 };
 
