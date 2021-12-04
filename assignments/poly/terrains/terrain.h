@@ -23,7 +23,7 @@ class Terrain {
             this->z = gridZ * config->terrain_size;
             switch (mode) {
                 case NORMAL:
-                    this->model = meshGenerator->proceduralTerrain(loader);
+                    this->model = meshGenerator->proceduralTerrain(loader, false);
                     break;
                 case VERTEX_COPY:
                     this->model = meshGenerator->generateDubVertexTerrain(loader);
@@ -31,6 +31,12 @@ class Terrain {
                     break;
                 case GEOMETRY:
                     this->model = meshGenerator->generateGeoTerrain(loader);
+                    break;
+                case FLAT_S:
+                    this->model = meshGenerator->proceduralTerrain(loader, true);
+                    break;
+                case EQUILINOX:
+                    this->model = meshGenerator->generateEquilinoxTerrain(loader);
                     break;
             }
         }

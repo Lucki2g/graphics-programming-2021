@@ -57,6 +57,12 @@ int main () {
     Terrain* terrain3 = new Terrain(0, 0, loader, colourGenerator, meshGenerator, config, GEOMETRY);
     renderer->addTerrain(terrain3, GEOMETRY);
 
+    Terrain* terrain4 = new Terrain(0, 0, loader, colourGenerator, meshGenerator, config, FLAT_S);
+    renderer->addTerrain(terrain4, FLAT_S);
+
+    Terrain* terrain5 = new Terrain(0, 0, loader, colourGenerator, meshGenerator, config, EQUILINOX);
+    renderer->addTerrain(terrain5, EQUILINOX);
+
     Gui* gui = new Gui(config, sun, cubeEntity);
 
 

@@ -61,6 +61,10 @@ class WaterRenderer {
         void render(Light* sun, glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {
 
             int mode = config->generationSetting;
+
+            if (shaders.find(mode) == shaders.end())
+                return;
+
             WaterShader* shader = shaders[mode].get();
 
             shader->Shader::start();

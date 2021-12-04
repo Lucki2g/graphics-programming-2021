@@ -122,7 +122,7 @@ class MeshGenerator {
         }
 
         /** NORMAL, MESH, FLAT **/
-        Model* proceduralTerrain(Loader* loader) {
+        Model* proceduralTerrain(Loader* loader, bool specialIndices) {
             HeightsGenerator* generator = new HeightsGenerator(config);
 
             float** heights = generateHeights(generator);
@@ -160,30 +160,8 @@ class MeshGenerator {
                 }
             }
 
-            generateIndices(out_indices);
-            /*for(int col = 0; col < config->terrain_size - 1; col++){
-                for(int row = 0; row < config->terrain_size - 1; row++){
-                    int topLeft = (row * config->terrain_size) + col;
-                    int topRight = topLeft + 1;
-                    int bottomLeft = ((row + 1) * config->terrain_size) + col;
-                    int bottomRight = bottomLeft + 1;
-                    if (row % 2 == 0) {
-                        indices.push_back(topLeft);
-                        indices.push_back(bottomLeft);
-                        indices.push_back(col % 2 == 0 ? topRight : bottomRight);
-                        indices.push_back(bottomRight);
-                        indices.push_back(topRight);
-                        indices.push_back(col % 2 == 0 ? bottomLeft : topLeft);
-                    }else{
-                        indices.push_back(topRight);
-                        indices.push_back(topLeft);
-                        indices.push_back(col % 2 == 0 ? bottomRight : bottomLeft);
-                        indices.push_back(bottomLeft);
-                        indices.push_back(bottomRight);
-                        indices.push_back(col % 2 == 0 ? topLeft : topRight);
-                    }
-                }
-            }*/
+            if (specialIndices) generateSpecialIndices(out_indices);
+            else generateIndices(out_indices);
 
             return loader->loadToVao(out_positions, out_normals, out_colours, out_indices);
         }
@@ -208,13 +186,6 @@ class MeshGenerator {
                             getHeight(z + 1, x + 1, gen_heights),
                     };
 
-                    /*std::vector<glm::vec3> corners = { // old from larger triangles
-                            glm::vec3(-((float) z / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(0), -((float) x / ((float) config->vertex_count - 1)) * config->size),
-                            glm::vec3(-((float) (z + 1) / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(1), -((float) x / ((float) config->vertex_count - 1)) * config->size),
-                            glm::vec3(-((float) z / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(2), -((float) (x + 1) / ((float) config->vertex_count - 1)) * config->size),
-                            glm::vec3(-((float) (z + 1) / ((float) config->vertex_count - 1)) * config->terrain_size, heights.at(3), -((float) (x + 1) / ((float) config->vertex_count - 1)) * config->size)
-                    };*/
-
                     std::vector<glm::vec3> corners = {
                             glm::vec3(z, heights.at(0), x),
                             glm::vec3(z + 1, heights.at(1), x),
@@ -238,29 +209,6 @@ class MeshGenerator {
             }
 
             return loader->loadToVao(out_positions, out_normals, out_colours);
-        }
-
-        Model* generateWater(Loader* loader) {
-
-            std::vector<float> out_positions;
-            std::vector<float> out_indicators;
-
-            for (int z = 0; z < config->terrain_size; z++) {
-                for (int x = 0; x < config->terrain_size; x++) {
-
-                    std::vector<glm::vec2> corners = {
-                            glm::vec2(x, z),
-                            glm::vec2(x + 1, z),
-                            glm::vec2(x, z + 1),
-                            glm::vec2(x + 1, z + 1)
-                    };
-
-                    storeTriangle(corners, 0, 1, 2, out_positions, out_indicators);
-                    storeTriangle(corners, 2, 1, 3, out_positions, out_indicators);
-                }
-            }
-
-            return loader->loadToVao(out_positions, out_indicators);//out_normals);
         }
 
         /** GEOMETRY **/
@@ -294,6 +242,87 @@ class MeshGenerator {
 
             return loader->loadToVaoNoNormals(out_positions, out_colours, out_indices);
         }
+
+        /** EQUILINOX **/
+        Model* generateEquilinoxTerrain(Loader* loader) {
+            HeightsGenerator* generator = new HeightsGenerator(config);
+
+            float** gen_heights = generateHeights(generator);
+
+            std::vector<float> out_positions;
+            std::vector<float> out_colours;
+            std::vector<float> out_normals;
+            std::vector<unsigned int> out_indices;
+
+            unsigned int lastLine = config->terrain_size - 2;
+
+
+            std::vector<TerrainQuad*> lastRow;
+
+            for (int z = 0; z < config->terrain_size - 1; z++) {
+                for (int x = 0; x < config->terrain_size - 1; x++) {
+                    std::vector<float> heights = {
+                            getHeight(z, x, gen_heights),
+                            getHeight(z + 1, x, gen_heights),
+                            getHeight(z, x + 1, gen_heights),
+                            getHeight(z + 1, x + 1, gen_heights),
+                    };
+
+                    std::vector<glm::vec3> corners = {
+                            glm::vec3(z, heights.at(0), x),
+                            glm::vec3(z + 1, heights.at(1), x),
+                            glm::vec3(z, heights.at(2), x + 1),
+                            glm::vec3(z + 1, heights.at(3), x + 1)
+                    };
+
+                    std::vector<glm::vec3> cols = {
+                            glm::normalize(colourGenerator->getColour(heights.at(0), config->amplitude)),
+                            glm::normalize(colourGenerator->getColour(heights.at(1), config->amplitude)),
+                            glm::normalize(colourGenerator->getColour(heights.at(2), config->amplitude)),
+                            glm::normalize(colourGenerator->getColour(heights.at(3), config->amplitude))
+                    };
+
+                    bool flipped = x % 2 != z % 2;
+                    glm::vec3 TLNormal = getNormal(corners.at(0), corners.at(1), corners.at(flipped ? 3 : 2));
+                    glm::vec3 BRNormal = getNormal(corners.at(2), corners.at(flipped ? 0 : 1), corners.at(3));
+
+                    TerrainQuad* quad = new TerrainQuad(z, x, lastLine, corners, cols, TLNormal, BRNormal);
+                    quad->storeData(out_positions, out_normals, out_colours);
+                    if (z == lastLine) lastRow.push_back(quad);
+                }
+            }
+
+            // last row
+            for (TerrainQuad* g : lastRow) g->storeLastRowData(out_positions, out_normals, out_colours);
+
+            generateEquilinoxIndices(out_indices);
+            return loader->loadToVao(out_positions, out_normals, out_colours, out_indices);
+        }
+
+        /** WATER **/
+        Model* generateWater(Loader* loader) {
+
+            std::vector<float> out_positions;
+            std::vector<float> out_indicators;
+
+            for (int z = 0; z < config->terrain_size; z++) {
+                for (int x = 0; x < config->terrain_size; x++) {
+
+                    std::vector<glm::vec2> corners = {
+                            glm::vec2(x, z),
+                            glm::vec2(x + 1, z),
+                            glm::vec2(x, z + 1),
+                            glm::vec2(x + 1, z + 1)
+                    };
+
+                    storeTriangle(corners, 0, 1, 2, out_positions, out_indicators);
+                    storeTriangle(corners, 2, 1, 3, out_positions, out_indicators);
+                }
+            }
+
+            return loader->loadToVao(out_positions, out_indicators);//out_normals);
+        }
+
         /************** INDICES ***************/
         void generateIndices(std::vector<unsigned int> &indices) {
             int size = config->terrain_size;
@@ -313,6 +342,102 @@ class MeshGenerator {
                     indices.push_back(topRight);
                     //std::cout << "T2: " << topLeft << " " << bottomRight << " " << topRight << std::endl;
                 }
+            }
+        }
+
+        void generateSpecialIndices(std::vector<unsigned int> &indices) {
+            int size = config->terrain_size;
+            for (int col = 0; col < size - 1; col++) {
+                for (int row = 0; row < size - 1; row++) {
+                    unsigned int topLeft = (row * size) + col;
+                    unsigned int topRight = topLeft + 1;
+                    unsigned int bottomLeft = ((row + 1) * size) + col;
+                    unsigned int bottomRight = bottomLeft + 1;
+                    if (row % 2 == 0) {
+                        indices.push_back(topLeft);
+                        indices.push_back(bottomLeft);
+                        if (col % 2 == 0)
+                            indices.push_back(topRight);
+                        else
+                            indices.push_back(bottomRight);
+                        indices.push_back(bottomRight);
+                        indices.push_back(topRight);
+                        if (col % 2 == 0)
+                            indices.push_back(bottomLeft);
+                        else
+                            indices.push_back(topLeft);
+                    } else {
+                        indices.push_back(topRight);
+                        indices.push_back(topLeft);
+                        if (col % 2 == 0)
+                            indices.push_back(bottomRight);
+                        else
+                            indices.push_back(bottomLeft);
+                        indices.push_back(bottomLeft);
+                        indices.push_back(bottomRight);
+                        if (col % 2 == 0)
+                            indices.push_back(topLeft);
+                        else
+                            indices.push_back(topRight);
+                    }
+                }
+            }
+        }
+
+        void generateEquilinoxIndices(std::vector<unsigned int> &indices) {
+            int size = config->terrain_size - 1;
+            int rowCount = size * 2;
+            // top rows
+            for (int row = 0; row < size - 2; row++) { // -2 for last lines
+                for (int col = 0; col < size; col++) {
+                    unsigned int topLeft = (row * rowCount) + (col * 2);
+                    unsigned int topRight = topLeft + 1;
+                    unsigned int bottomLeft = topLeft + rowCount;
+                    unsigned int bottomRight = bottomLeft + 1;
+
+                    bool flipped = row % 2 != col % 2;
+                    indices.push_back(topLeft);
+                    indices.push_back(bottomLeft);
+                    indices.push_back(flipped ? bottomRight : topRight);
+
+                    indices.push_back(topRight);
+                    indices.push_back(flipped ? topLeft : bottomLeft);
+                    indices.push_back(bottomRight);
+                }
+            }
+            // second last row
+            int row = size - 2;
+            for (int col = 0; col < size; col++) {
+                unsigned int topLeft = (row * rowCount) + (col * 2);
+                unsigned int topRight = topLeft + 1;
+                unsigned int bottomLeft = topLeft + rowCount - col;
+                unsigned int bottomRight = bottomLeft + 1;
+
+                bool flipped = col % 2 != col % 2;
+                indices.push_back(topLeft);
+                indices.push_back(bottomLeft);
+                indices.push_back(flipped ? bottomRight : topRight);
+
+                indices.push_back(topRight);
+                indices.push_back(flipped ? topLeft : bottomLeft);
+                indices.push_back(bottomRight);
+            }
+            // last row
+            row++;
+            for (int col = 0; col < size; col++) {
+                unsigned int topLeft = (row * rowCount) + col;
+                unsigned int topRight = topLeft + 1;
+                unsigned int bottomLeft = topLeft + config->terrain_size;
+                unsigned int bottomRight = bottomLeft + 1;
+
+                bool flipped = col % 2 != col % 2;
+                indices.push_back(topLeft);
+                indices.push_back(bottomLeft);
+                indices.push_back(flipped ? bottomRight : topRight);
+
+                indices.push_back(topRight);
+                indices.push_back(flipped ? topLeft : bottomLeft);
+                indices.push_back(bottomRight);
             }
         }
 
@@ -383,6 +508,90 @@ class MeshGenerator {
             glm::vec3 tangentB = v2 - v0;
             return glm::normalize(glm::cross(tangentA, tangentB));
         }
+
+        /** QUAD OF MESH**/
+        struct TerrainQuad {
+            int row, col, lastrow;
+            std::vector<glm::vec3> corners;
+            std::vector<glm::vec3> cols;
+            glm::vec3 left, right;
+
+            TerrainQuad(int row, int col, int lastrow, std::vector<glm::vec3> corners, std::vector<glm::vec3> cols, glm::vec3 T, glm::vec3 B) {
+                this->row = row;
+                this->col = col;
+                this->lastrow = lastrow;
+                this->corners = corners;
+                this->cols = cols;
+                this->left = -T;
+                this->right = -B;
+            }
+
+            void storeData(std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+                storeTopLeft(positions, normals, colours);
+                if (row != lastrow || col == lastrow) storeTopRight(positions, normals, colours);
+            }
+
+            void storeLastRowData(std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+                if (col == 0) storeBottomLeft(positions, normals, colours);
+                storeBottomRight(positions, normals, colours);
+            }
+
+            void storeTopLeft(std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+                positions.push_back(corners.at(0).x);
+                positions.push_back(corners.at(0).y);
+                positions.push_back(corners.at(0).z);
+
+                normals.push_back(left.x);
+                normals.push_back(left.y);
+                normals.push_back(left.z);
+
+                colours.push_back(cols.at(0).x);
+                colours.push_back(cols.at(0).y);
+                colours.push_back(cols.at(0).z);
+            }
+
+            void storeTopRight(std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+                positions.push_back(corners.at(2).x);
+                positions.push_back(corners.at(2).y);
+                positions.push_back(corners.at(2).z);
+
+                normals.push_back(right.x);
+                normals.push_back(right.y);
+                normals.push_back(right.z);
+
+                colours.push_back(cols.at(2).x);
+                colours.push_back(cols.at(2).y);
+                colours.push_back(cols.at(2).z);
+            }
+
+            void storeBottomLeft(std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+                positions.push_back(corners.at(1).x);
+                positions.push_back(corners.at(1).y);
+                positions.push_back(corners.at(1).z);
+
+                normals.push_back(left.x);
+                normals.push_back(left.y);
+                normals.push_back(left.z);
+
+                colours.push_back(cols.at(1).x);
+                colours.push_back(cols.at(1).y);
+                colours.push_back(cols.at(1).z);
+            }
+
+            void storeBottomRight(std::vector<float> &positions, std::vector<float> &normals, std::vector<float> &colours) {
+                positions.push_back(corners.at(3).x);
+                positions.push_back(corners.at(3).y);
+                positions.push_back(corners.at(3).z);
+
+                normals.push_back(right.x);
+                normals.push_back(right.y);
+                normals.push_back(right.z);
+
+                colours.push_back(cols.at(3).x);
+                colours.push_back(cols.at(3).y);
+                colours.push_back(cols.at(3).z);
+            }
+        };
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_MESH_GENERATOR_H

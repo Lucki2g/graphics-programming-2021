@@ -46,8 +46,12 @@ class Gui {
                     config->generationSetting = FLAT;
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 }
-                if(ImGui::RadioButton("HYBRID", config->generationSetting == HYBRID))  {
-                    config->generationSetting = HYBRID;
+                if(ImGui::RadioButton("SPECIAL_FLAT", config->generationSetting == FLAT_S))  {
+                    config->generationSetting = FLAT_S;
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+                if(ImGui::RadioButton("EQUILINOX", config->generationSetting == EQUILINOX))  {
+                    config->generationSetting = EQUILINOX;
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 }
                 if(ImGui::RadioButton("MESH", config->generationSetting == MESH))  {

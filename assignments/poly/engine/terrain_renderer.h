@@ -79,6 +79,8 @@ class TerrainRenderer {
             flatShader->loadProjectionMatrix(projectionMatrix);
             flatShader->Shader::stop();
             shaders.insert(std::pair<int, std::unique_ptr<TerrainShader>>(FLAT, flatShader));
+            shaders.insert(std::pair<int, std::unique_ptr<TerrainShader>>(FLAT_S, flatShader));
+            shaders.insert(std::pair<int, std::unique_ptr<TerrainShader>>(EQUILINOX, flatShader));
         }
 
         void render(Light* sun, glm::vec4 clipPlane, glm::mat4 viewMatrix, Config* config) {

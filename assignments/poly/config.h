@@ -14,9 +14,10 @@
 const int NORMAL = 0;
 const int VERTEX_COPY = 1;
 const int GEOMETRY = 2;
-const int HYBRID = 3;
-const int MESH = 4;
-const int FLAT = 5;
+const int MESH = 3;
+const int FLAT = 4;
+const int FLAT_S = 5;
+const int EQUILINOX = 6;
 
 struct Config {
     /** WINDOW **/
