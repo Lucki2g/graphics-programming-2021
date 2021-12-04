@@ -65,6 +65,12 @@ class Gui {
                 ImGui::DragFloat3("light direction", (float*)&config->lightDirection, 0.01f, -1.0f, 1.0f);
                 ImGui::SliderFloat("ambient reflectance", &config->ambientReflectance, 0.0f, 1.0f);
                 ImGui::SliderFloat("diffuse reflectance", &config->diffuseReflectance, 0.0f, 1.0f);
+                ImGui::SliderFloat("specular reflectance", &config->specularReflectance, 0.0f, 1.0f);
+                ImGui::SliderFloat("specular factor", &config->specularFactor, 2.0f, 256.0f);
+                ImGui::Separator();
+                ImGui::Text("Water");
+                ImGui::DragFloat3("light color", (float*)&config->waterColour, 0.01f, 0.0f, 1.0f);
+                ImGui::SliderFloat("fresnel", &config->fresnelReflectiveness, 0.0f, 1.0f);
                 ImGui::Separator();
                 ImGui::Text("Terrain Generation");
                 ImGui::SliderFloat("Frequency", &config->frequency, 0.01f, 1.0f);

@@ -9,6 +9,7 @@
 #include <shaders/water/water_fbos.h>
 #include <shaders/water/normal/normal_water_shader.h>
 #include <map>
+#include <shaders/water/lowpoly/lowpoly_water_shader.h>
 
 class WaterRenderer {
     private:
@@ -55,7 +56,15 @@ class WaterRenderer {
             normalShader->loadHeight(config->water_height);
             normalShader->Shader::stop();
             shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(NORMAL, normalShader));
-            shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(VERTEX_COPY, normalShader));
+
+            LowPolyWaterShader* lowpolyShader;
+            lowpolyShader = new LowPolyWaterShader();
+            lowpolyShader->Shader::start();
+            lowpolyShader->loadTextures();
+            lowpolyShader->loadProjectionMatrix(projectionMatrix);
+            lowpolyShader->loadHeight(config->water_height);
+            lowpolyShader->Shader::stop();
+            shaders.insert(std::pair<int, std::unique_ptr<WaterShader>>(VERTEX_COPY, lowpolyShader));
         }
 
         void render(Light* sun, glm::mat4 viewMatrix, glm::vec3 camPosition, Config* config) {
@@ -72,9 +81,12 @@ class WaterRenderer {
             shader->loadViewMatrix(viewMatrix);
             shader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
             shader->loadDiffuseLighting(config->diffuseReflectance);
+            shader->loadSpecularLighting(config->specularReflectance, config->specularFactor);
             shader->loadLightDirection(config->lightDirection);
             shader->loadCameraInformation(camPosition, config);
             shader->loadWaveTime(time += config->wave_speed);
+            shader->loadWaterColour(config->waterColour);
+            shader->loadFresnel(config->fresnelReflectiveness);
             bind();
             loadWater(shader);
             unbind();

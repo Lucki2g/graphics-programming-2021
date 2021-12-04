@@ -20,6 +20,7 @@ void renderTerrain(Config* config, NormalTerrainShader* normalShader, Light* sun
                    GeometryTerrainShader* geoShader, glm::vec4 clippingPlane);
 
 int main () {
+
     /******************* SETUP *****************/
     Config* config = new Config();
     WindowManager* windowManager = new WindowManager(config);
@@ -64,7 +65,6 @@ int main () {
     renderer->addTerrain(terrain5, EQUILINOX);
 
     Gui* gui = new Gui(config, sun, cubeEntity);
-
 
     /******************* WATER *****************/
     WaterFBOs* waterFbOs = new WaterFBOs(config);

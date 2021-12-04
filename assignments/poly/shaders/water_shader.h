@@ -54,8 +54,21 @@ class WaterShader : public Shader {
             Shader::setFloat("diffuseReflectance", reflectance);
         }
 
+        void loadSpecularLighting(float reflectance, float factor) {
+            Shader::setFloat("specularReflectance", reflectance);
+            Shader::setFloat("specularFactor", factor);
+        }
+
         void loadLightDirection(glm::vec3 direction) {
             Shader::setVec3("lightDirection", direction);
+        }
+
+        void loadFresnel(float fresnel) {
+            Shader::setFloat("fresnelReflectiveness", fresnel);
+        }
+
+        void loadWaterColour(glm::vec3 colour) {
+            Shader::setVec3("waterColour", colour);
         }
 
     private:

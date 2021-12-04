@@ -49,7 +49,7 @@ struct Config {
             // snow
             glm::vec3(248, 249, 250)
     };
-    float spread = 0.45f;
+    float spread = 0.55f;
     float half_spread = spread / 2.0;
     float part = 1.0f / (pallet.size() - 1);
 
@@ -74,6 +74,8 @@ struct Config {
     // material
     float ambientReflectance = 0.3f;
     float diffuseReflectance = 0.8f;
+    float specularReflectance = 0.05f;
+    float specularFactor = 8.0f;
 
     /** WATER **/
     int water_height = -1.0f;
@@ -83,6 +85,7 @@ struct Config {
     const int refraction_width = width / 2;//1280;
     const int refraction_height = height / 2;//720;
 
+    glm::vec3 waterColour = glm::vec3(0.604, 0.867, 0.851);
+    float fresnelReflectiveness = 0.5f;
 };
-
 #endif //ITU_GRAPHICS_PROGRAMMING_CONFIG_H

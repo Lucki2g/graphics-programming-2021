@@ -11,13 +11,13 @@ uniform sampler2D reflectionTexture;
 uniform sampler2D refractionTexture;
 uniform sampler2D depthTexture;
 uniform vec2 nearFarPlane;
+uniform vec3 waterColour;
+uniform float fresnelReflectiveness;
 
-const vec3 waterColour = vec3(0.604, 0.867, 0.851);
-const float fresnelReflectiveness = 0.5f;
 const float softness = 1.0f;
 const float minBlueness = 0.4f;
 const float maxBlueness = 0.75f;
-const float murkyDepth = 15f;
+const float murkyDepth = 15.0f;
 
 vec3 applyMurkiness(vec3 refractColour, float waterDepth){
     float murkyFactor = smoothstep(0, murkyDepth, waterDepth);

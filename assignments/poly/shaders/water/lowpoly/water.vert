@@ -6,8 +6,8 @@ out vec4 pass_clipSpace;
 out vec4 pass_clipSpaceGrid;
 out vec3 pass_toCamera;
 out vec3 pass_normal;
-out vec3 pass_lighting_ambdif;
-out vec3 pass_lighting_spec;
+out vec3 pass_specular;
+out vec3 pass_ambientdiffuse;
 
 // matrices and camera
 uniform vec3 cameraPosition;
@@ -22,47 +22,30 @@ uniform vec3 lightDirection;
 uniform vec3 ambientLightColour;
 uniform float ambientReflectance;
 uniform float diffuseReflectance;
+uniform float specularReflectance;
+uniform float specularFactor;
 
-const float PI = 3.1415926535897932384626433832795f;
-const float waveLength = 10.0f;
-const float waveAmplitude = 1.0f;
-// TODO - make uniform variables
-const float specularReflectivity = 0.4f;
-const float shineDamper = 20.0f;
+const float PI = 3.1415926535897932384626433832795;
+const float waveLength = 4.0f;
+const float waveAmplitude = 0.2f;
 
+// specular lighting
+vec3 calcSpecularLighting(vec3 toCamVector, vec3 toLightVector, vec3 normal){
+    vec3 reflectDirection = reflect(-toLightVector, normal);
+    float specular = pow(max(dot(toCamVector, reflectDirection), 0.0f), specularFactor);
+    return lightColour * specularReflectance * specular;
+}
 
-vec3 getAmbientDiffuse(vec3 toCam, vec3 N) {
+// ambient diffuse lighting
+vec3 calcAmbientDiffuseLighting(vec3 N) {
     // ambient
     vec3 ambient = lightColour * ambientReflectance;
 
     // diffuse
-    float diff = max(dot(lightDirection, N), 0.0);
+    float diff = max(dot(-lightDirection, N), 0.0);
     vec3 diffuse = diff * diffuseReflectance * lightColour;
 
     return (ambient + diffuse);
-}
-
-vec3 getSpecular(vec3 toCam, vec3 N) {
-    // specular
-    vec3 reflectedLightDirection = reflect(lightDirection, N);
-    float specularFactor = dot(reflectedLightDirection , toCam);
-    specularFactor = max(specularFactor, 0.0);
-    specularFactor = pow(specularFactor, shineDamper);
-    vec3 specular = specularFactor * specularReflectivity * lightColour;
-    return specular;
-}
-
-float createOffset(float x, float z, float val1, float val2) {
-    float radiansX = (x / waveLength + waveTime) * 2.0 * PI;
-    float radiansZ = (z / waveLength + waveTime) * 2.0 * PI;
-    return waveAmplitude * 0.5f * (sin(radiansZ) + cos(radiansX));
-}
-
-vec3 distort(vec3 vertex) {
-    float distX = createOffset(vertex.x, vertex.z, 0.2f, 0.1f);
-    float distY = createOffset(vertex.x, vertex.z, 0.1f, 0.3f);
-    float distZ = createOffset(vertex.x, vertex.z, 0.15f, 0.2f);
-    return vertex + vec3(distX, distY, distZ);
 }
 
 vec3 calcNormal(vec3 v, vec3 v1, vec3 v2) {
@@ -72,29 +55,37 @@ vec3 calcNormal(vec3 v, vec3 v1, vec3 v2) {
     return normalize(normal);
 }
 
+float generateOffset(float x, float z, float val1, float val2){
+    float radiansX = ((mod(x+z*x*val1, waveLength)/waveLength) + waveTime * mod(x * 0.8 + z, 1.5)) * 2.0 * PI;
+    float radiansZ = ((mod(val2 * (z*x +x*z), waveLength)/waveLength) + waveTime * 2.0 * mod(x , 2.0) ) * 2.0 * PI;
+    return waveAmplitude * 0.5 * (sin(radiansZ) + cos(radiansX));
+}
+
+vec3 applyDistortion(vec3 vertex){
+    float xDistortion = generateOffset(vertex.x, vertex.z, 0.2, 0.1);
+    float yDistortion = generateOffset(vertex.x, vertex.z, 0.1, 0.3);
+    float zDistortion = generateOffset(vertex.x, vertex.z, 0.15, 0.2);
+    return vertex + vec3(xDistortion, yDistortion, zDistortion);
+}
+
 void main(void) {
 
     vec3 vertex = vec3(in_position.x, height, in_position.y);
-    vec3 offset1 = vec3(in_indicators.x, 0.0f, in_indicators.y);
-    vec3 offset2 = vec3(in_indicators.z, 0.0f, in_indicators.w);
-    vec3 v1 = vertex + offset1;
-    vec3 v2 = vertex + offset2;
+    vec3 v1 = vertex + vec3(in_indicators.x, 0.0f, in_indicators.y);
+    vec3 v2 = vertex + vec3(in_indicators.z, 0.0f, in_indicators.w);
+    pass_clipSpaceGrid = projectionMatrix * viewMatrix * vec4(vertex, 1.0f); // real grid position
 
-    pass_clipSpaceGrid = projectionMatrix * viewMatrix * vec4(vertex, 1.0f);
+    // distortion
+    vertex = applyDistortion(vertex);
+    v1 = applyDistortion(v1);
+    v2 = applyDistortion(v2);
 
-    vertex = distort(vertex);
-    v1 = distort(v1);
-    v2 = distort(v2);
-
-    pass_normal = calcNormal(vertex, v1, v2);
+    pass_normal = -calcNormal(vertex, v1, v2);
 
     pass_clipSpace = projectionMatrix * viewMatrix * vec4(vertex, 1.0f);
     gl_Position = pass_clipSpace;
 
     pass_toCamera = normalize(cameraPosition - vertex);
-
-    // lighting
-    vec3 L = -normalize(lightDirection);
-    pass_lighting_spec = getSpecular(pass_toCamera, pass_normal);
-    pass_lighting_ambdif = getAmbientDiffuse(pass_toCamera, pass_normal);
+    pass_specular = calcSpecularLighting(pass_toCamera, -lightDirection, pass_normal);
+    pass_ambientdiffuse = calcAmbientDiffuseLighting(pass_normal);
 }
