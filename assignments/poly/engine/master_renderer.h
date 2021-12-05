@@ -29,7 +29,7 @@ public:
 
         void render(Light* sun, glm::mat4 viewMatrix, Config* config, glm::vec4 clipPlane) {
             prepare(config);
-            entities->render(sun, viewMatrix);
+            if (config->generationSetting != NORMAL) entities->render(sun, viewMatrix, config);
             terrains->render(sun, clipPlane, viewMatrix, config);
         }
 
@@ -39,6 +39,10 @@ public:
 
         void addTerrain(Terrain* terrain, int mode) {
             terrains->addTerrain(terrain, mode);
+        }
+
+        void regenerate(Loader* loader, ColourGenerator* colourGenerator, MeshGenerator* meshGenerator, Config* config) {
+            terrains->regenerate(loader, colourGenerator, meshGenerator, config);
         }
 };
 

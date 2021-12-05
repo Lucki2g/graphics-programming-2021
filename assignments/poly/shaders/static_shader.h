@@ -5,6 +5,7 @@
 #ifndef ITU_GRAPHICS_PROGRAMMING_STATIC_SHADER_H
 #define ITU_GRAPHICS_PROGRAMMING_STATIC_SHADER_H
 
+#include <config.h>
 #include "shader_program.h"
 #include "../entities/light.h"
 
@@ -34,9 +35,18 @@ class StaticShader : public Shader {
             Shader::setMat4("viewMatrix", matrix);
         }
 
-        void loadLight(Light* light) {
-            Shader::setVec3("lightPosition", light->getPosition());
+        void loadLight(Light* light, Config* config) {
+            Shader::setVec3("lightDirection", config->lightDirection);
             Shader::setVec3("lightColour", light->getColour());
+        }
+
+        void loadAmbientLighting(glm::vec3 colour, float intensity, float reflectance) {
+            Shader::setVec3("ambientLightColour", colour * intensity);
+            Shader::setFloat("ambientReflectance", reflectance);
+        }
+
+        void loadDiffuseLighting(float reflectance) {
+            Shader::setFloat("diffuseReflectance", reflectance);
         }
 };
 

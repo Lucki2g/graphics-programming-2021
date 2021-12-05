@@ -34,7 +34,7 @@ struct Config {
     glm::vec3 start_position = glm::vec3(0, 50, 0);
 
     /** TERRAIN **/
-    int terrain_size = 400;
+    int terrain_size = 100;
     // float size = 200.0f;
     std::vector<glm::vec3> pallet = {
             // beach

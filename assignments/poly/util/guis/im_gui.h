@@ -9,21 +9,23 @@
 #include <GLFW/glfw3.h>
 #include <entities/light.h>
 #include <entities/entity.h>
+#include <engine/master_renderer.h>
 #include "config.h"
 
 class Gui {
     private:
         Config* config;
         Light* sun;
-        Entity* entity;
+        MasterRenderer* renderer;
+
     public:
-        Gui(Config* config, Light* sun, Entity* entity) {
+        Gui(Config* config, Light* sun, MasterRenderer* renderer) {
             this->config = config;
             this->sun = sun;
-            this->entity = entity;
+            this->renderer = renderer;
         }
 
-        void drawGui() {
+        void drawGui(Loader* loader, ColourGenerator* colourGenerator, MeshGenerator* meshGenerator, Config* config) {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
@@ -71,10 +73,11 @@ class Gui {
                 ImGui::Text("Water");
                 ImGui::DragFloat3("light color", (float*)&config->waterColour, 0.01f, 0.0f, 1.0f);
                 ImGui::SliderFloat("fresnel", &config->fresnelReflectiveness, 0.0f, 1.0f);
+                ImGui::Checkbox("Show/Hide FBOs", &config->showFbos);
                 ImGui::Separator();
                 ImGui::Text("Terrain Generation");
-                ImGui::SliderFloat("Frequency", &config->frequency, 0.01f, 1.0f);
-                ImGui::Checkbox("Show/Hide FBOs", &config->showFbos);
+                //ImGui::DragFloat("size", (float*)&config->terrain_size, 1.0f, 40.0f, 400.0f);
+                //if (ImGui::Button("Regenerate terrain")) { renderer->regenerate(loader, colourGenerator, meshGenerator, config); }
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
                 ImGui::End();

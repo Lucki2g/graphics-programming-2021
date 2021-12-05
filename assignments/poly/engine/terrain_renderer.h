@@ -106,6 +106,14 @@ class TerrainRenderer {
         void addTerrain(Terrain* terrain, int type) {
             terrains[type].push_back(terrain);
         }
+
+        void regenerate(Loader* loader, ColourGenerator* colourGenerator, MeshGenerator* meshGenerator, Config* config) {
+            for (std::map<int, std::vector<Terrain*>>::iterator it = terrains.begin(); it != terrains.end(); ++it) {
+                for (Terrain* terrain : it->second) {
+                    terrain->regenerate(loader, colourGenerator, meshGenerator, config);
+                }
+            }
+        }
 };
 
 #endif //ITU_GRAPHICS_PROGRAMMING_ENTITY_RENDERER_H

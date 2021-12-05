@@ -36,13 +36,20 @@ int main () {
     WaterRenderer* waterRenderer = new WaterRenderer(windowManager->getProjectionMatrix(), config);
 
     /******************* MODELS & TERRAIN *****************/
-    /*Model* model = objloader->loadObjModel("models/dragon.obj", loader);
-    Entity* entity = new Entity(model, glm::vec3(0, 0, -2), glm::vec3(), 1);
-    entityRenderer->addEntity(entity);*/
 
-    Model* cubeModel = loader->loadToVao(cubeVertices, cubeColors, cubeNormals, cubeIndices);
-    Entity* cubeEntity = new Entity(cubeModel, config->lightPosition, glm::vec3(), 1);
-    renderer->addEntity(cubeEntity);
+    Model* cloud1 = objloader->loadObjModel("models/cloud1.obj", loader);
+    Entity* ent_cloud1 = new Entity(cloud1, glm::vec3(2, 14, 10), glm::vec3(), 0.015f);
+    renderer->addEntity(ent_cloud1);
+    Entity* ent_cloud1_2 = new Entity(cloud1, glm::vec3(4, 12, 32), glm::vec3(), 0.025f);
+    renderer->addEntity(ent_cloud1_2);
+
+    Model* cloud2 = objloader->loadObjModel("models/cloud2.obj", loader);
+    Entity* ent_cloud2 = new Entity(cloud2, glm::vec3(12, 18, 7), glm::vec3(), 0.015f);
+    renderer->addEntity(ent_cloud2);
+
+    Model* cloud3 = objloader->loadObjModel("models/cloud3.obj", loader);
+    Entity* ent_cloud3 = new Entity(cloud3, glm::vec3(24, 10, 1), glm::vec3(), 0.01f);
+    renderer->addEntity(ent_cloud3);
 
     // std::cout << config->lightPosition.x << "," << config->lightPosition.y << "," << config->lightPosition.z << std::endl;
     Light* sun = new Light(config->lightPosition, config->lightColour, config->lightIntensity);
@@ -64,7 +71,7 @@ int main () {
     Terrain* terrain5 = new Terrain(0, 0, loader, colourGenerator, meshGenerator, config, EQUILINOX);
     renderer->addTerrain(terrain5, EQUILINOX);
 
-    Gui* gui = new Gui(config, sun, cubeEntity);
+    Gui* gui = new Gui(config, sun, renderer);
 
     /******************* WATER *****************/
     WaterFBOs* waterFbOs = new WaterFBOs(config);
@@ -78,6 +85,7 @@ int main () {
     guis.push_back(new GuiTexture(waterFbOs->getReflectionTex(), glm::vec2(0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
     guis.push_back(new GuiTexture(waterFbOs->getRefractionTex(), glm::vec2(-0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
     guis.push_back(new GuiTexture(waterFbOs->getRefractionDepthTex(), glm::vec2(-0.5f, -0.5f), glm::vec2(0.25f, 0.25f), true));
+
 
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
@@ -113,7 +121,7 @@ int main () {
         // gui
         if (config->showFbos) guiRenderer->render(guis);
         if (windowManager->shouldDrawGui())
-            gui->drawGui();
+            gui->drawGui(loader, colourGenerator, meshGenerator, config);
 
         //update
         windowManager->updateWindow();

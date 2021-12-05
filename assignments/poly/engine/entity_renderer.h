@@ -52,9 +52,11 @@ class EntityRenderer {
             shader->Shader::stop();
         }
 
-        void render(Light* sun, glm::mat4 viewMatrix) {
+        void render(Light* sun, glm::mat4 viewMatrix, Config* config) {
             shader->Shader::start();
-            shader->loadLight(sun);
+            shader->loadLight(sun, config);
+            shader->loadAmbientLighting(config->ambientLightColour, config->ambientLightIntensity, config->ambientReflectance);
+            shader->loadDiffuseLighting(config->diffuseReflectance);
             shader->loadViewMatrix(viewMatrix);
             for (Entity* entity : entities) {
                 bind(entity);

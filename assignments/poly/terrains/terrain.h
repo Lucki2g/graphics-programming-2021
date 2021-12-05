@@ -16,11 +16,17 @@ class Terrain {
         float x, z;
         Model* model;
         bool indices = true;
+        int mode;
 
     public:
         Terrain(int gridX, int gridZ, Loader* loader, ColourGenerator* colourGenerator, MeshGenerator* meshGenerator, Config* config, int mode) {
             this->x = gridX * config->terrain_size;
             this->z = gridZ * config->terrain_size;
+            this->mode = mode;
+            regenerate(loader, colourGenerator, meshGenerator, config);
+        }
+
+        void regenerate(Loader* loader, ColourGenerator* colourGenerator, MeshGenerator* meshGenerator, Config* config) {
             switch (mode) {
                 case NORMAL:
                     this->model = meshGenerator->proceduralTerrain(loader, false);
