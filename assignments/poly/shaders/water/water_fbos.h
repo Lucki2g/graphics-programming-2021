@@ -25,7 +25,7 @@ class WaterFBOs {
             reflectionTexture = createColourAttachment(config->reflection_width, config->reflection_height);
             reflectionDepthBuffer = createRenderBuffer(config->reflection_width, config->reflection_height);
             if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-                std::cout << "generated reflection: " << reflectionFrameBuffer << std::endl;
+                // std::cout << "generated reflection: " << reflectionFrameBuffer << std::endl;
             unbindFrameBuffer();
         }
 
@@ -34,7 +34,7 @@ class WaterFBOs {
             refractionTexture = createColourAttachment(config->refraction_width, config->refraction_height);
             refractionDepthTexture = createDepthAttachment(config->refraction_width, config->refraction_height);
             if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-                std::cout << "generated refraction: " << refractionFrameBuffer << std::endl;
+                // std::cout << "generated refraction: " << refractionFrameBuffer << std::endl;
             unbindFrameBuffer();
         }
 

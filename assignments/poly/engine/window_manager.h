@@ -19,6 +19,7 @@
 Camera* camera;
 glm::vec2 previous;
 bool drawGui = false;
+int width, height;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
@@ -27,6 +28,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             case GLFW_KEY_SPACE: case GLFW_KEY_ESCAPE:
                 drawGui = !drawGui;
                 glfwSetInputMode(window, GLFW_CURSOR, drawGui ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+                if (!drawGui) { previous = glm::vec2(width / 2, height / 2); }
                 break;
         }
     }
@@ -64,7 +66,6 @@ class WindowManager {
 
     private:
         GLFWwindow* window;
-        int width, height;
         Config* config;
 
     /****************************
@@ -114,7 +115,6 @@ class WindowManager {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
 
-
         // IMGUI init
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -126,6 +126,9 @@ class WindowManager {
 
         // set provoking vertex
         glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+
+        // unlock FPS (disable VSync)
+        // glfwSwapInterval(0);
 
         glfwShowWindow(window);
     }
@@ -171,5 +174,4 @@ class WindowManager {
             camera->move(config->speed * glm::normalize(glm::cross(camera->getForward(), glm::vec3(0,1,0))));
     }
 };
-
 #endif //ITU_GRAPHICS_PROGRAMMING_WINDOW_MANAGER_H

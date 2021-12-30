@@ -8,7 +8,7 @@ uniform sampler2D sampler;
 uniform bool isDepthTexture;
 
 const float near = 0.1f;
-const float far = 1000.0f;
+const float far = 24.0f;
 
 float linearDepth(float depth) {
     float z = depth * 2.0f - 1.0f;
@@ -18,7 +18,7 @@ float linearDepth(float depth) {
 void main(void) {
     vec4 colour = texture(sampler, textureCoords);
     if (isDepthTexture) {
-        float depth = (linearDepth(colour.r) - linearDepth(gl_FragCoord.z)) / far;
+        float depth = (linearDepth(colour.r)) / far;
         FragColour = vec4(vec3(depth), 1.0f);
     } else {
         FragColour = colour;

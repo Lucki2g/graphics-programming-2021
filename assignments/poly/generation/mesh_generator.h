@@ -244,6 +244,7 @@ class MeshGenerator {
         }
 
         /** EQUILINOX **/
+        // from Equilinox github
         Model* generateEquilinoxTerrain(Loader* loader) {
             HeightsGenerator* generator = new HeightsGenerator(config);
 

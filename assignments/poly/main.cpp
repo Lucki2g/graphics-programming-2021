@@ -86,7 +86,6 @@ int main () {
     guis.push_back(new GuiTexture(waterFbOs->getRefractionTex(), glm::vec2(-0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
     guis.push_back(new GuiTexture(waterFbOs->getRefractionDepthTex(), glm::vec2(-0.5f, -0.5f), glm::vec2(0.25f, 0.25f), true));
 
-
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
 

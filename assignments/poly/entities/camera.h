@@ -11,7 +11,7 @@ class Camera {
     private:
         glm::vec3 position;
         glm::vec3 forward = glm::vec3(0,0.5f,-1.0f);
-        float pitch, yaw = -90.0f;
+        float pitch = -30.0f, yaw = 40.0f;
 
     public:
         Camera(glm::vec3 start) {

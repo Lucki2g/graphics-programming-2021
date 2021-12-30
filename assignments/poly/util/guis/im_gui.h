@@ -74,6 +74,8 @@ class Gui {
                 ImGui::DragFloat3("light color", (float*)&config->waterColour, 0.01f, 0.0f, 1.0f);
                 ImGui::SliderFloat("fresnel", &config->fresnelReflectiveness, 0.0f, 1.0f);
                 ImGui::Checkbox("Show/Hide FBOs", &config->showFbos);
+                //ImGui::DragFloat("near plane", (float*)&config->near_plane, 0.005f, 0.01f, 0.5f);
+                //ImGui::DragFloat("far plane", (float*)&config->far_plane, 1.0f, 1.0f, 1000.0f);
                 ImGui::Separator();
                 ImGui::Text("Terrain Generation");
                 //ImGui::DragFloat("size", (float*)&config->terrain_size, 1.0f, 40.0f, 400.0f);

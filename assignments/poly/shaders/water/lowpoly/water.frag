@@ -32,7 +32,7 @@ vec3 applyMurkiness(vec3 refractColour, float waterDepth){
 float toLinearDepth(float zDepth){
     float near = nearFarPlane.x;
     float far = nearFarPlane.y;
-    return 2.0 * near * far / (far + near - (2.0 * zDepth - 1.0) * (far - near));
+    return (2.0 * near * far) / (far + near - (2.0 * zDepth - 1.0) * (far - near));
 }
 
 // Get the depth from water to submerged terrain
