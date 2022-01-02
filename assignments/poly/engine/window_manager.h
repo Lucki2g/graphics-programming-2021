@@ -11,6 +11,7 @@
 #include <config.h>
 #include "util/glmutils.h"
 #include "../entities/camera.h"
+#include "wtypes.h"
 
 /****************************
  *          EVENTS          *
@@ -68,6 +69,22 @@ class WindowManager {
         GLFWwindow* window;
         Config* config;
 
+    // Get the horizontal and vertical screen sizes in pixel
+    void getDesktopResolution(int& horizontal, int& vertical)
+    {
+        RECT desktop;
+        // Get a handle to the desktop window
+        const HWND hDesktop = GetDesktopWindow();
+        // Get the size of screen to the variable desktop
+        GetWindowRect(hDesktop, &desktop);
+        // The top left corner will have coordinates (0,0)
+        // and the bottom right corner will have coordinates
+        // (horizontal, vertical)
+        horizontal = desktop.right;
+        vertical = desktop.bottom;
+    }
+
+
     /****************************
      *       CONSTRUCTOR        *
      ****************************/
@@ -109,6 +126,12 @@ class WindowManager {
 
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
             throw "Failed to load GLAD!";
+
+        // set window position
+        int w = GetSystemMetrics(SM_CXSCREEN);
+        int h = GetSystemMetrics(SM_CYSCREEN);
+        glfwSetWindowPos(window, (w - width) / 2, (h - height) / 2);
+        glfwFocusWindow(window);aw
 
         // enable depth buffer
         // glDepthRange(-1, 1);
