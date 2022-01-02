@@ -131,7 +131,7 @@ class WindowManager {
         int w = GetSystemMetrics(SM_CXSCREEN);
         int h = GetSystemMetrics(SM_CYSCREEN);
         glfwSetWindowPos(window, (w - width) / 2, (h - height) / 2);
-        glfwFocusWindow(window);aw
+        glfwFocusWindow(window);
 
         // enable depth buffer
         // glDepthRange(-1, 1);
