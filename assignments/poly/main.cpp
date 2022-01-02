@@ -13,6 +13,7 @@
 #include <engine/water_renderer.h>
 #include <engine/gui_renderer.h>
 #include <engine/master_renderer.h>
+#include <chrono>
 
 void print(std::string s);
 void renderTerrain(Config* config, NormalTerrainShader* normalShader, Light* sun, WindowManager* windowManager,
@@ -87,41 +88,52 @@ int main () {
     guis.push_back(new GuiTexture(waterFbOs->getRefractionDepthTex(), glm::vec2(-0.5f, -0.5f), glm::vec2(0.25f, -0.25f), true));
 
     /******************* LOOP *****************/
+    float FPS = 60;
+    auto begin = std::chrono::high_resolution_clock::now();
+    float lastTime;
+
+    /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
+        // update current time
+        float time = glfwGetTime();
+        float d = time - lastTime;
+        if (d >= 1 / FPS) {
+            lastTime = time;
+
+            // water
+            // render scene to reflection texture
+            waterFbOs->bindReflection();
+            float d = 2 * (camera->getPosition().y - waterEntity->getPosition().y);
+            camera->move(glm::vec3(0, -d, 0)); // move camera under the water
+            camera->invertPitch();
+            camera->calculateForward();
+
+            renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, -waterEntity->getPosition().y + 0.1f));
+            camera->move(glm::vec3(0, d, 0)); // move camera back
+            camera->invertPitch();
+            camera->calculateForward();
+            waterFbOs->unbindFrameBuffer();
+
+            // render scene to refraction texture
+            waterFbOs->bindRefraction();
+            renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, -1, 0, waterEntity->getPosition().y + 2.0f));
+            waterFbOs->unbindFrameBuffer();
+
+            // render
+            renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, config->amplitude + 20.0f));
+            waterRenderer->render(sun, windowManager->getViewMatrix(), camera->getPosition(), config);
+
+            // gui
+            if (config->showFbos) guiRenderer->render(guis);
+            if (windowManager->shouldDrawGui())
+                gui->drawGui(loader, colourGenerator, meshGenerator, config);
+
+        }
 
         glEnable(GL_CLIP_DISTANCE0); // enable clipping plane for water texture
 
         // process input
         windowManager->processInput();
-
-        // water
-        // render scene to reflection texture
-        waterFbOs->bindReflection();
-        float d = 2 * (camera->getPosition().y - waterEntity->getPosition().y);
-        camera->move(glm::vec3(0, -d, 0)); // move camera under the water
-        camera->invertPitch();
-        camera->calculateForward();
-
-        renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, -waterEntity->getPosition().y + 0.1f));
-        camera->move(glm::vec3(0, d, 0)); // move camera back
-        camera->invertPitch();
-        camera->calculateForward();
-        waterFbOs->unbindFrameBuffer();
-
-        // render scene to refraction texture
-        waterFbOs->bindRefraction();
-        renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, -1, 0, waterEntity->getPosition().y + 2.0f));
-        waterFbOs->unbindFrameBuffer();
-
-        // render
-        renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, config->amplitude + 20.0f));
-        waterRenderer->render(sun, windowManager->getViewMatrix(), camera->getPosition(), config);
-
-        // gui
-        if (config->showFbos) guiRenderer->render(guis);
-        if (windowManager->shouldDrawGui())
-            gui->drawGui(loader, colourGenerator, meshGenerator, config);
-
         //update
         windowManager->updateWindow();
     }
