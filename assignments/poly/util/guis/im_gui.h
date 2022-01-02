@@ -90,8 +90,9 @@ class Gui {
                 ImGui::DragFloat("wave amplitude", (float*)&config->waveAmplitude, 0.1f, 0.1f, 1.0f);
                 //ImGui::DragFloat("near plane", (float*)&config->near_plane, 0.005f, 0.01f, 0.5f);
                 //ImGui::DragFloat("far plane", (float*)&config->far_plane, 1.0f, 1.0f, 1000.0f);
-                //ImGui::Separator();
-                //ImGui::Text("Terrain Generation");
+                /**ImGui::Separator();
+                ImGui::Text("Window");
+                ImGui::Checkbox("unlock FPS", &config->unlockFPS);*/
                 //ImGui::DragFloat("size", (float*)&config->terrain_size, 1.0f, 40.0f, 400.0f);
                 //if (ImGui::Button("Regenerate terrain")) { renderer->regenerate(loader, colourGenerator, meshGenerator, config); }
 

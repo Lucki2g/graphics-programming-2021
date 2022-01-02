@@ -29,6 +29,7 @@ struct Config {
     int height = 720;
     glm::vec3 backgroundColour = {1.0f, 1.0f, 1.0f};
     bool showFbos = false;
+    bool unlockFPS = false;
 
     /** CAMERA **/
     float fov = 70.0f;

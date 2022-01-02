@@ -90,14 +90,14 @@ int main () {
     /******************* LOOP *****************/
     float FPS = 60;
     auto begin = std::chrono::high_resolution_clock::now();
-    float lastTime;
+    float lastTime = 0.0f;
 
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
         // update current time
         float time = glfwGetTime();
         float d = time - lastTime;
-        if (d >= 1 / FPS) {
+        if (d >= 1 / FPS || config->unlockFPS) {
             lastTime = time;
 
             // water
