@@ -19,6 +19,10 @@ const int FLAT = 4;
 const int FLAT_S = 5;
 const int EQUILINOX = 6;
 
+const int RANDOM = 0;
+const int SINUS = 1;
+const int SAW = 2;
+
 struct Config {
     /** WINDOW **/
     int width = 1080;
@@ -85,7 +89,11 @@ struct Config {
     const int refraction_width = width / 2;//1280;
     const int refraction_height = height / 2;//720;
 
+    unsigned int distortionFunction = RANDOM;
+
     glm::vec3 waterColour = glm::vec3(0.604, 0.867, 0.851);
     float fresnelReflectiveness = 0.5f;
+    float waveLength = 4.0f;
+    float waveAmplitude = 0.2f;
 };
 #endif //ITU_GRAPHICS_PROGRAMMING_CONFIG_H

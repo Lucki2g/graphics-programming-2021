@@ -25,9 +25,14 @@ uniform float diffuseReflectance;
 uniform float specularReflectance;
 uniform float specularFactor;
 
+// distortion
+uniform int distortion;
+const int RANDOM = 0;
+const int SIN = 1;
+uniform float waveLength;
+uniform float waveAmplitude;
+
 const float PI = 3.1415926535897932384626433832795;
-const float waveLength = 4.0f;
-const float waveAmplitude = 0.2f;
 
 // specular lighting
 vec3 calcSpecularLighting(vec3 toCamVector, vec3 toLightVector, vec3 normal){
@@ -55,16 +60,34 @@ vec3 calcNormal(vec3 v, vec3 v1, vec3 v2) {
     return normalize(normal);
 }
 
-float generateOffset(float x, float z, float val1, float val2){
+// Distortion
+// Equilinox random
+float generateOffsetRandom(float x, float z, float val1, float val2){
     float radiansX = ((mod(x + z * x * val1, waveLength)/waveLength) + waveTime * mod(x * 0.8 + z, 1.5)) * 2.0 * PI;
     float radiansZ = ((mod(val2 * (z * x + x * z), waveLength)/waveLength) + waveTime * 2.0 * mod(x , 2.0) ) * 2.0 * PI;
     return waveAmplitude * 0.5 * (sin(radiansZ) + cos(radiansX));
 }
+// sinwave function
+float generateOffsetSinus(float x, float z) {
+    float radiansX = (x / waveLength + waveTime) * 2.0 * PI;
+    float radiansZ = (z / waveLength + waveTime) * 2.0 * PI;
+    return waveAmplitude * 0.5 * (sin(radiansZ) + cos(radiansX));
+}
 
 vec3 applyDistortion(vec3 vertex){
-    float xDistortion = generateOffset(vertex.x, vertex.z, 0.2, 0.1);
-    float yDistortion = generateOffset(vertex.x, vertex.z, 0.1, 0.3);
-    float zDistortion = generateOffset(vertex.x, vertex.z, 0.15, 0.2);
+    float xDistortion, yDistortion, zDistortion;
+    switch (distortion) {
+        case RANDOM:
+            xDistortion = generateOffsetRandom(vertex.x, vertex.z, 0.2, 0.1);
+            yDistortion = generateOffsetRandom(vertex.x, vertex.z, 0.1, 0.3);
+            zDistortion = generateOffsetRandom(vertex.x, vertex.z, 0.15, 0.2);
+            break;
+        case SIN:
+            xDistortion = generateOffsetSinus(vertex.x, vertex.z);
+            yDistortion = generateOffsetSinus(vertex.x, vertex.z);
+            zDistortion = generateOffsetSinus(vertex.x, vertex.z);
+            break;
+    }
     return vertex + vec3(xDistortion, yDistortion, zDistortion);
 }
 

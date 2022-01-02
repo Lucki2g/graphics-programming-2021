@@ -161,7 +161,7 @@ class WindowManager {
 
     void processInput() {
         int press = GLFW_PRESS;
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == press && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_DELETE) == press)
             glfwSetWindowShouldClose(window, true);
 
         if (glfwGetKey(window, GLFW_KEY_W) == press)

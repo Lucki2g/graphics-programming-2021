@@ -36,8 +36,10 @@ class WaterShader : public Shader {
             Shader::setFloat("height", height);
         }
 
-        void loadWaveTime(float time) {
+        void loadWaveData(float time, float length, float amplitude) {
             Shader::setFloat("waveTime", time);
+            Shader::setFloat("waveLength", length);
+            Shader::setFloat("waveAmplitude", amplitude);
         }
 
         void loadLight(Light* light) {
@@ -69,6 +71,10 @@ class WaterShader : public Shader {
 
         void loadWaterColour(glm::vec3 colour) {
             Shader::setVec3("waterColour", colour);
+        }
+
+        void loadDistortion(unsigned int function) {
+            Shader::setInt("distortion", function);
         }
 
     private:

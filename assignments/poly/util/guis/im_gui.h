@@ -71,9 +71,23 @@ class Gui {
                 ImGui::SliderFloat("specular factor", &config->specularFactor, 2.0f, 256.0f);
                 ImGui::Separator();
                 ImGui::Text("Water");
-                ImGui::DragFloat3("light color", (float*)&config->waterColour, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat3("water color", (float*)&config->waterColour, 0.01f, 0.0f, 1.0f);
                 ImGui::SliderFloat("fresnel", &config->fresnelReflectiveness, 0.0f, 1.0f);
                 ImGui::Checkbox("Show/Hide FBOs", &config->showFbos);
+
+                ImGui::Text("Distortion");
+                if(ImGui::RadioButton("RANDOM", config->distortionFunction == RANDOM)) {
+                    config->distortionFunction = RANDOM;
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+                ImGui::SameLine();
+                if(ImGui::RadioButton("SINE WAVE", config->distortionFunction == SINUS)) {
+                    config->distortionFunction = SINUS;
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+
+                ImGui::DragFloat("wave length", (float*)&config->waveLength, 1.0f, 1.0f, 10.0f);
+                ImGui::DragFloat("wave amplitude", (float*)&config->waveAmplitude, 0.1f, 0.1f, 1.0f);
                 //ImGui::DragFloat("near plane", (float*)&config->near_plane, 0.005f, 0.01f, 0.5f);
                 //ImGui::DragFloat("far plane", (float*)&config->far_plane, 1.0f, 1.0f, 1000.0f);
                 ImGui::Separator();

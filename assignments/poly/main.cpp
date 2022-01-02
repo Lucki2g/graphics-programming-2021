@@ -83,8 +83,8 @@ int main () {
     GuiRenderer* guiRenderer = new GuiRenderer(loader);
     std::vector<GuiTexture*> guis = {};
     guis.push_back(new GuiTexture(waterFbOs->getReflectionTex(), glm::vec2(0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
-    guis.push_back(new GuiTexture(waterFbOs->getRefractionTex(), glm::vec2(-0.5f, 0.5f), glm::vec2(0.25f, 0.25f)));
-    guis.push_back(new GuiTexture(waterFbOs->getRefractionDepthTex(), glm::vec2(-0.5f, -0.5f), glm::vec2(0.25f, 0.25f), true));
+    guis.push_back(new GuiTexture(waterFbOs->getRefractionTex(), glm::vec2(-0.5f, 0.5f), glm::vec2(0.25f, -0.25f)));
+    guis.push_back(new GuiTexture(waterFbOs->getRefractionDepthTex(), glm::vec2(-0.5f, -0.5f), glm::vec2(0.25f, -0.25f), true));
 
     /******************* LOOP *****************/
     while (!windowManager->shouldClose()) {
@@ -102,7 +102,7 @@ int main () {
         camera->invertPitch();
         camera->calculateForward();
 
-        renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, -waterEntity->getPosition().y + 0.01f));
+        renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, 1, 0, -waterEntity->getPosition().y + 0.1f));
         camera->move(glm::vec3(0, d, 0)); // move camera back
         camera->invertPitch();
         camera->calculateForward();
@@ -110,7 +110,7 @@ int main () {
 
         // render scene to refraction texture
         waterFbOs->bindRefraction();
-        renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, -1, 0, waterEntity->getPosition().y + 0.2f));
+        renderer->render(sun, windowManager->getViewMatrix(), config, glm::vec4(0, -1, 0, waterEntity->getPosition().y + 2.0f));
         waterFbOs->unbindFrameBuffer();
 
         // render
@@ -132,6 +132,7 @@ int main () {
     loader->clean();
     windowManager->closeWindow();
 }
+
 
 void print(std::string s) {
     std::cout << s << std::endl;
