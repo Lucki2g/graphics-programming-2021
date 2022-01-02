@@ -89,7 +89,6 @@ int main () {
 
     /******************* LOOP *****************/
     float FPS = 60;
-    auto begin = std::chrono::high_resolution_clock::now();
     float lastTime = 0.0f;
 
     /******************* LOOP *****************/
@@ -97,8 +96,10 @@ int main () {
         // update current time
         float time = glfwGetTime();
         float d = time - lastTime;
-        if (d >= 1 / FPS || config->unlockFPS) {
+        if (d >= 1 / FPS) {
             lastTime = time;
+
+            glEnable(GL_CLIP_DISTANCE0); // enable clipping plane for water texture
 
             // water
             // render scene to reflection texture
@@ -128,14 +129,12 @@ int main () {
             if (windowManager->shouldDrawGui())
                 gui->drawGui(loader, colourGenerator, meshGenerator, config);
 
+
+            // process input
+            windowManager->processInput();
+            //update
+            windowManager->updateWindow();
         }
-
-        glEnable(GL_CLIP_DISTANCE0); // enable clipping plane for water texture
-
-        // process input
-        windowManager->processInput();
-        //update
-        windowManager->updateWindow();
     }
 
     /******************* CLEAN *****************/
